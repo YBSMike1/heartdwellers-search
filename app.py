@@ -79,12 +79,12 @@ if st.button("🔍 Search", type="primary"):
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
-            # Top Banner - Only show after search
+            # Top Banner - 50% Bigger and Centered
             top_banner = "Newest banner.png"
             if os.path.exists(top_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(top_banner, width=620)
+                    st.image(top_banner, width=930)
 
             st.subheader("📋 Search Results")
             
@@ -133,12 +133,12 @@ if st.button("🔍 Search", type="primary"):
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
 
-            # Bottom Banner - Only show after search
+            # Bottom Banner - 50% Bigger and Centered
             bottom_banner = "Bottom banner Std.png"
             if os.path.exists(bottom_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(bottom_banner, width=620)
+                    st.image(bottom_banner, width=930)
         else:
             st.info("No matches found.")
 
