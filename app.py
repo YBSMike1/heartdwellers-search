@@ -6,11 +6,18 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
 import tempfile
-from rapidfuzz import fuzz, process
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
+
+# Display Top Banner
+top_banner = "Newest banner.png"
+if os.path.exists(top_banner):
+    st.image(top_banner, use_column_width=True)
+else:
+    st.warning("Top banner image not found.")
+
 st.title("❤️ Heartdwellers Search Tool")
-st.markdown("**Search Jesus' messages to Mother Clare** (Fuzzy search enabled)")
+st.markdown("**Search Jesus' messages to Mother Clare**")
 
 DOCX_FOLDER = st.text_input(
     "Path to Heartdwellers Docxs folder",
@@ -18,10 +25,11 @@ DOCX_FOLDER = st.text_input(
     help="Exact folder name you uploaded"
 )
 
-def search_italic_text(search_word, folder_path, similarity_threshold=70):
+def search_italic_text(search_word, folder_path):
     results = []
     file_count = 0
     match_count = 0
+    pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
 
     if not os.path.exists(folder_path):
         st.error(f"Folder not found: {folder_path}")
@@ -51,22 +59,18 @@ def search_italic_text(search_word, folder_path, similarity_threshold=70):
                 doc = Document(file_path)
                 for p in doc.paragraphs:
                     italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
-                    if italic_text:
+                    if italic_text and re.search(pattern, italic_text):
                         italic_text = italic_text.strip()
-                        # Fuzzy match
-                        score = fuzz.partial_ratio(search_word.lower(), italic_text.lower())
-                        if score >= similarity_threshold:
+                        if italic_text:
                             results.append({
                                 "file": os.path.relpath(file_path, folder_path),
-                                "text": italic_text,
-                                "score": score
+                                "text": italic_text
                             })
                             match_count += 1
             except:
                 continue
 
     progress_bar.progress(1.0)
-    results.sort(key=lambda x: x["score"], reverse=True)
     return results, file_count, match_count
 
 # ====================== SEARCH ======================
@@ -76,7 +80,7 @@ if st.button("🔍 Search", type="primary"):
     if not search_word:
         st.warning("Please enter a word.")
     else:
-        with st.spinner("Searching messages (fuzzy matching enabled)..."):
+        with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
 
         if results:
@@ -85,20 +89,14 @@ if st.button("🔍 Search", type="primary"):
             st.subheader("📋 Search Results")
             
             for i, res in enumerate(results):
-                # Highlight the best matching word (even if typo)
-                best_match = process.extractOne(search_word, res['text'].split(), scorer=fuzz.partial_ratio)
-                if best_match and best_match[1] >= 70:
-                    matched_word = best_match[0]
-                    highlighted = re.sub(
-                        rf'(?<!\w){re.escape(matched_word)}(?!\w)', 
-                        f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{matched_word}</span>', 
-                        res['text'], 
-                        flags=re.IGNORECASE
-                    )
-                else:
-                    highlighted = res['text']
-
-                with st.expander(f"📄 {res['file']} (Match: {res['score']}%)", expanded=True):
+                highlighted = re.sub(
+                    rf'(?<!\w){re.escape(search_word)}(?!\w)', 
+                    f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
+                    res['text'], 
+                    flags=re.IGNORECASE
+                )
+                
+                with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""
                     <div style="font-family: Calibri, Arial, sans-serif; 
                                 font-size: 0.92em; 
@@ -137,4 +135,11 @@ if st.button("🔍 Search", type="primary"):
         else:
             st.info("No matches found.")
 
-st.caption("Heartdwellers Search Tool — Fuzzy search enabled for typos")
+# Display Bottom Banner
+bottom_banner = "Bottom banner Std.png"
+if os.path.exists(bottom_banner):
+    st.image(bottom_banner, use_column_width=True)
+else:
+    st.warning("Bottom banner image not found.")
+
+st.caption("Heartdwellers Search Tool — Built for the community")
