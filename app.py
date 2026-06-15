@@ -82,9 +82,8 @@ if st.button("🔍 Search", type="primary"):
             
             for i, res in enumerate(results):
                 with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
-                    # Larger, cleaner text
                     st.markdown(f"""
-                    <div style="font-size: 1.1em; line-height: 1.7; background-color: #2a2a2a; padding: 18px; border-radius: 8px;">
+                    <div style="font-size: 0.95em; line-height: 1.65; background-color: #2a2a2a; padding: 16px; border-radius: 8px;">
                         <strong>{res['text']}</strong>
                     </div>
                     """, unsafe_allow_html=True)
