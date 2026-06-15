@@ -79,14 +79,12 @@ if st.button("🔍 Search", type="primary"):
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
             st.subheader("📋 Search Results")
-            
+
             for i, res in enumerate(results):
                 with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
-                    # Clean formatting with better readability
-                    clean_text = re.sub(r'\s+', ' ', res['text']).strip()
-                    st.markdown(f"**{clean_text}**")
+                    st.markdown(f"**{res['text']}**")   # Clean and bold
 
-            # Download Full Report
+            # Download Full Report (same nice format as your original program)
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -103,7 +101,7 @@ if st.button("🔍 Search", type="primary"):
                 doc.save(tmp.name)
                 with open(tmp.name, "rb") as f:
                     st.download_button(
-                        label="📥 Download Full Report (Word Document)",
+                        label="📥 Download Full Report (Word Document with Banners & Summary)",
                         data=f,
                         file_name=f"Jesus speaks about {search_word}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
