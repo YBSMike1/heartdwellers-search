@@ -9,15 +9,6 @@ import tempfile
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 
-# Top Banner - Larger and Centered
-top_banner = "Newest banner.png"
-if os.path.exists(top_banner):
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image(top_banner, width=620)
-else:
-    st.warning("Top banner image not found.")
-
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
@@ -88,6 +79,13 @@ if st.button("🔍 Search", type="primary"):
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
+            # Top Banner - Only show after search
+            top_banner = "Newest banner.png"
+            if os.path.exists(top_banner):
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    st.image(top_banner, width=620)
+
             st.subheader("📋 Search Results")
             
             for i, res in enumerate(results):
@@ -134,16 +132,14 @@ if st.button("🔍 Search", type="primary"):
                         file_name=f"Jesus speaks about {search_word}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
+
+            # Bottom Banner - Only show after search
+            bottom_banner = "Bottom banner Std.png"
+            if os.path.exists(bottom_banner):
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    st.image(bottom_banner, width=620)
         else:
             st.info("No matches found.")
-
-# Bottom Banner - Larger and Centered
-bottom_banner = "Bottom banner Std.png"
-if os.path.exists(bottom_banner):
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image(bottom_banner, width=620)
-else:
-    st.caption("💡 Tip: Upload 'Bottom banner Std.png' for full styling.")
 
 st.caption("Heartdwellers Search Tool — Built for the community")
