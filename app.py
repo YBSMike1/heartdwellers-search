@@ -79,7 +79,7 @@ if st.button("🔍 Search", type="primary"):
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
             st.subheader("📋 Search Results")
-            
+
             for i, res in enumerate(results):
                 highlighted = re.sub(
                     rf'(?<!\w){re.escape(search_word)}(?!\w)', 
@@ -91,18 +91,18 @@ if st.button("🔍 Search", type="primary"):
                 with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
                     st.markdown(f"""
                     <div style="font-family: Calibri, Arial, sans-serif; 
-                                font-size: 0.92em; 
-                                line-height: 1.75; 
-                                background-color: #F06292; 
-                                padding: 18px; 
-                                border-radius: 10px; 
-                                border-left: 6px solid #D81B60; 
-                                color: #1e1e2e;">
-                        {highlighted}
+                                font-size: 1.0em; 
+                                line-height: 1.8; 
+                                background-color: #ffffff; 
+                                color: #1e1e2e;
+                                padding: 20px; 
+                                border-radius: 8px; 
+                                border: 1px solid #D81B60;">
+                        <strong>{highlighted}</strong>
                     </div>
                     """, unsafe_allow_html=True)
 
-            # Download Full Report
+            # Download Full Report (closest to your original desktop version)
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -119,7 +119,7 @@ if st.button("🔍 Search", type="primary"):
                 doc.save(tmp.name)
                 with open(tmp.name, "rb") as f:
                     st.download_button(
-                        label="📥 Download Full Report (Word Document)",
+                        label="📥 Download Full Report (Word Document with Banners)",
                         data=f,
                         file_name=f"Jesus speaks about {search_word}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
