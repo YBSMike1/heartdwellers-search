@@ -90,7 +90,9 @@ if st.button("🔍 Search", type="primary"):
                 
                 with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
                     st.markdown(f"""
-                    <div style="font-size: 0.85em; line-height: 1.75; 
+                    <div style="font-family: Calibri, Arial, sans-serif; 
+                                font-size: 0.92em; 
+                                line-height: 1.75; 
                                 background-color: #F06292; 
                                 padding: 18px; 
                                 border-radius: 10px; 
