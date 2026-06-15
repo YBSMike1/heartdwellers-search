@@ -6,7 +6,7 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
 import tempfile
-from rapidfuzz import fuzz
+from rapidfuzz import fuzz, process
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 st.title("❤️ Heartdwellers Search Tool")
@@ -53,6 +53,7 @@ def search_italic_text(search_word, folder_path, similarity_threshold=70):
                     italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
                     if italic_text:
                         italic_text = italic_text.strip()
+                        # Fuzzy match
                         score = fuzz.partial_ratio(search_word.lower(), italic_text.lower())
                         if score >= similarity_threshold:
                             results.append({
@@ -84,14 +85,19 @@ if st.button("🔍 Search", type="primary"):
             st.subheader("📋 Search Results")
             
             for i, res in enumerate(results):
-                # Highlight the original searched word even with typos
-                highlighted = re.sub(
-                    rf'(?<!\w){re.escape(search_word)}(?!\w)', 
-                    f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
-                    res['text'], 
-                    flags=re.IGNORECASE
-                )
-                
+                # Highlight the best matching word (even if typo)
+                best_match = process.extractOne(search_word, res['text'].split(), scorer=fuzz.partial_ratio)
+                if best_match and best_match[1] >= 70:
+                    matched_word = best_match[0]
+                    highlighted = re.sub(
+                        rf'(?<!\w){re.escape(matched_word)}(?!\w)', 
+                        f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{matched_word}</span>', 
+                        res['text'], 
+                        flags=re.IGNORECASE
+                    )
+                else:
+                    highlighted = res['text']
+
                 with st.expander(f"📄 {res['file']} (Match: {res['score']}%)", expanded=True):
                     st.markdown(f"""
                     <div style="font-family: Calibri, Arial, sans-serif; 
