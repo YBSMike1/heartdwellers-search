@@ -6,10 +6,11 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
 import tempfile
+from rapidfuzz import fuzz, process
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 st.title("❤️ Heartdwellers Search Tool")
-st.markdown("**Search Jesus' messages to Mother Clare**")
+st.markdown("**Search Jesus' messages to Mother Clare** (Fuzzy search enabled for typos)")
 
 DOCX_FOLDER = st.text_input(
     "Path to Heartdwellers Docxs folder",
@@ -17,11 +18,10 @@ DOCX_FOLDER = st.text_input(
     help="Exact folder name you uploaded"
 )
 
-def search_italic_text(search_word, folder_path):
+def search_italic_text(search_word, folder_path, similarity_threshold=75):
     results = []
     file_count = 0
     match_count = 0
-    pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
 
     if not os.path.exists(folder_path):
         st.error(f"Folder not found: {folder_path}")
@@ -51,18 +51,23 @@ def search_italic_text(search_word, folder_path):
                 doc = Document(file_path)
                 for p in doc.paragraphs:
                     italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
-                    if italic_text and re.search(pattern, italic_text):
+                    if italic_text:
                         italic_text = italic_text.strip()
-                        if italic_text:
+                        # Fuzzy matching
+                        score = fuzz.partial_ratio(search_word.lower(), italic_text.lower())
+                        if score >= similarity_threshold:
                             results.append({
                                 "file": os.path.relpath(file_path, folder_path),
-                                "text": italic_text
+                                "text": italic_text,
+                                "score": score
                             })
                             match_count += 1
             except:
                 continue
 
     progress_bar.progress(1.0)
+    # Sort by similarity score (best matches first)
+    results.sort(key=lambda x: x["score"], reverse=True)
     return results, file_count, match_count
 
 # ====================== SEARCH ======================
@@ -72,8 +77,8 @@ if st.button("🔍 Search", type="primary"):
     if not search_word:
         st.warning("Please enter a word.")
     else:
-        with st.spinner("Searching messages..."):
-            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+        with st.spinner("Searching messages (fuzzy matching enabled)..."):
+            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER, similarity_threshold=70)
 
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
@@ -88,20 +93,19 @@ if st.button("🔍 Search", type="primary"):
                     flags=re.IGNORECASE
                 )
                 
-                # Always expanded
-                st.markdown(f"""
-                <div style="font-family: Calibri, Arial, sans-serif; 
-                            font-size: 0.92em; 
-                            line-height: 1.75; 
-                            background-color: #F06292; 
-                            padding: 18px; 
-                            border-radius: 10px; 
-                            border-left: 6px solid #D81B60; 
-                            color: #1e1e2e; 
-                            margin-bottom: 15px;">
-                    <strong>{highlighted}</strong>
-                </div>
-                """, unsafe_allow_html=True)
+                with st.expander(f"📄 {res['file']} (Match: {res['score']}%)", expanded=(i < 5)):
+                    st.markdown(f"""
+                    <div style="font-family: Calibri, Arial, sans-serif; 
+                                font-size: 0.92em; 
+                                line-height: 1.75; 
+                                background-color: #F06292; 
+                                padding: 18px; 
+                                border-radius: 10px; 
+                                border-left: 6px solid #D81B60; 
+                                color: #1e1e2e;">
+                        {highlighted}
+                    </div>
+                    """, unsafe_allow_html=True)
 
             # Download Full Report
             doc = Document()
@@ -128,4 +132,4 @@ if st.button("🔍 Search", type="primary"):
         else:
             st.info("No matches found.")
 
-st.caption("Heartdwellers Search Tool — Built for the community")
+st.caption("Heartdwellers Search Tool — Fuzzy search enabled for typos")
