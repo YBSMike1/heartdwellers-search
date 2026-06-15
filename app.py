@@ -81,10 +81,18 @@ if st.button("🔍 Search", type="primary"):
             st.subheader("📋 Search Results")
             
             for i, res in enumerate(results):
+                # Highlight the searched word
+                highlighted = re.sub(
+                    rf'(?<!\w){re.escape(search_word)}(?!\w)', 
+                    f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
+                    res['text'], 
+                    flags=re.IGNORECASE
+                )
+                
                 with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
                     st.markdown(f"""
-                    <div style="font-size: 0.95em; line-height: 1.65; background-color: #2a2a2a; padding: 16px; border-radius: 8px;">
-                        <strong>{res['text']}</strong>
+                    <div style="font-size: 0.9em; line-height: 1.7; background-color: #2a2a2a; padding: 16px; border-radius: 8px;">
+                        {highlighted}
                     </div>
                     """, unsafe_allow_html=True)
 
