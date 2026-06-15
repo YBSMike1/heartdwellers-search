@@ -14,15 +14,8 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 DOCX_FOLDER = st.text_input(
     "Path to Heartdwellers Docxs folder",
     value="Heartdwellers Docxs",
-    help="Make sure this folder name exactly matches what you uploaded"
+    help="Exact folder name you uploaded"
 )
-
-def highlight_run(run):
-    try:
-        highlight_xml = '<w:highlight w:val="yellow" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"/>'
-        run._r.get_or_add_rPr().append(parse_xml(highlight_xml))
-    except:
-        pass
 
 def search_italic_text(search_word, folder_path):
     results = []
@@ -32,13 +25,10 @@ def search_italic_text(search_word, folder_path):
 
     if not os.path.exists(folder_path):
         st.error(f"Folder not found: {folder_path}")
-        st.info(f"Current working directory: {os.getcwd()}")
-        st.info(f"Files in current directory: {os.listdir('.')}")
         return [], 0, 0
 
     progress_bar = st.progress(0)
     status = st.empty()
-
     total_files = sum(1 for _, _, files in os.walk(folder_path) 
                      for f in files if f.lower().endswith('.docx'))
 
@@ -54,7 +44,7 @@ def search_italic_text(search_word, folder_path):
             file_count += 1
             processed += 1
             progress_bar.progress(min(processed / max(total_files, 1), 1.0))
-            status.text(f"Searching {filename}...")
+            status.text(f"Searching: {filename}")
 
             try:
                 doc = Document(file_path)
@@ -62,12 +52,13 @@ def search_italic_text(search_word, folder_path):
                     italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
                     if italic_text and re.search(pattern, italic_text):
                         italic_text = italic_text.strip()
-                        results.append({
-                            "file": os.path.relpath(file_path, folder_path),
-                            "text": italic_text
-                        })
-                        match_count += 1
-            except Exception as e:
+                        if italic_text:  # Only add non-empty
+                            results.append({
+                                "file": os.path.relpath(file_path, folder_path),
+                                "text": italic_text
+                            })
+                            match_count += 1
+            except:
                 continue
 
     progress_bar.progress(1.0)
@@ -88,15 +79,18 @@ if st.button("🔍 Search", type="primary"):
 
             st.subheader("📋 Search Results")
             for i, res in enumerate(results):
-                with st.expander(f"{i+1}. {res['file']}", expanded=(i < 5)):
-                    st.markdown(f"**{res['text']}**")
+                with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
+                    st.write(res['text'])
 
-            # Download button
+            # Download Full Report
             doc = Document()
-            # (simplified document generation)
+            for section in doc.sections:
+                section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+
             doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+
             for res in results:
-                doc.add_paragraph(res["file"])
+                doc.add_paragraph(res["file"], style='Heading 3')
                 p = doc.add_paragraph(res["text"])
                 for run in p.runs:
                     run.italic = True
@@ -113,4 +107,4 @@ if st.button("🔍 Search", type="primary"):
         else:
             st.info("No matches found.")
 
-st.caption("Heartdwellers Search Tool")
+st.caption("Heartdwellers Search Tool — Built for the community")
