@@ -14,7 +14,7 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 DOCX_FOLDER = st.text_input(
     "Path to Heartdwellers Docxs folder",
     value="Heartdwellers Docxs",
-    help="Exact folder name you uploaded"
+    help="Exact folder name containing your .docx files"
 )
 
 def search_italic_text(search_word, folder_path):
@@ -29,6 +29,7 @@ def search_italic_text(search_word, folder_path):
 
     progress_bar = st.progress(0)
     status = st.empty()
+
     total_files = sum(1 for _, _, files in os.walk(folder_path) 
                      for f in files if f.lower().endswith('.docx'))
 
@@ -52,7 +53,7 @@ def search_italic_text(search_word, folder_path):
                     italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
                     if italic_text and re.search(pattern, italic_text):
                         italic_text = italic_text.strip()
-                        if italic_text:  # Only add non-empty
+                        if italic_text:
                             results.append({
                                 "file": os.path.relpath(file_path, folder_path),
                                 "text": italic_text
@@ -78,10 +79,11 @@ if st.button("🔍 Search", type="primary"):
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
             st.subheader("📋 Search Results")
+            
             for i, res in enumerate(results):
-                with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
-                    st.write(res['text'])
-
+                with st.expander(f"📄 {res['file']}", expanded=(i < 5)):
+                    st.markdown(f"**{res['text']}**")   # Bold + clean formatting
+                    
             # Download Full Report
             doc = Document()
             for section in doc.sections:
