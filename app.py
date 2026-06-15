@@ -14,7 +14,7 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 DOCX_FOLDER = st.text_input(
     "Path to Heartdwellers Docxs folder",
     value="Heartdwellers Docxs",
-    help="Exact folder name containing your .docx files"
+    help="Exact folder name you uploaded"
 )
 
 def search_italic_text(search_word, folder_path):
@@ -81,9 +81,11 @@ if st.button("🔍 Search", type="primary"):
             st.subheader("📋 Search Results")
             
             for i, res in enumerate(results):
-                with st.expander(f"📄 {res['file']}", expanded=(i < 5)):
-                    st.markdown(f"**{res['text']}**")   # Bold + clean formatting
-                    
+                with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
+                    # Clean formatting with better readability
+                    clean_text = re.sub(r'\s+', ' ', res['text']).strip()
+                    st.markdown(f"**{clean_text}**")
+
             # Download Full Report
             doc = Document()
             for section in doc.sections:
