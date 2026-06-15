@@ -82,9 +82,13 @@ if st.button("🔍 Search", type="primary"):
 
             for i, res in enumerate(results):
                 with st.expander(f"📄 {res['file']}", expanded=(i < 3)):
-                    st.markdown(f"**{res['text']}**")   # Clean and bold
+                    st.markdown(f"""
+                    <div style="background-color: #2a2a2a; padding: 15px; border-radius: 8px; line-height: 1.6;">
+                        <strong>{res['text']}</strong>
+                    </div>
+                    """, unsafe_allow_html=True)
 
-            # Download Full Report (same nice format as your original program)
+            # Download Full Report (same nice format as desktop)
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -101,7 +105,7 @@ if st.button("🔍 Search", type="primary"):
                 doc.save(tmp.name)
                 with open(tmp.name, "rb") as f:
                     st.download_button(
-                        label="📥 Download Full Report (Word Document with Banners & Summary)",
+                        label="📥 Download Full Report (Word Document)",
                         data=f,
                         file_name=f"Jesus speaks about {search_word}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
