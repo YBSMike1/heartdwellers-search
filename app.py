@@ -14,7 +14,7 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 DOCX_FOLDER = st.text_input(
     "Path to Heartdwellers Docxs folder",
     value="Heartdwellers Docxs",
-    help="Folder containing your .docx files"
+    help="Make sure this folder name exactly matches what you uploaded"
 )
 
 def highlight_run(run):
@@ -25,14 +25,16 @@ def highlight_run(run):
         pass
 
 def search_italic_text(search_word, folder_path):
-    if not os.path.exists(folder_path):
-        st.error(f"Folder not found: {folder_path}")
-        return [], 0, 0
-
     results = []
     file_count = 0
     match_count = 0
     pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
+
+    if not os.path.exists(folder_path):
+        st.error(f"Folder not found: {folder_path}")
+        st.info(f"Current working directory: {os.getcwd()}")
+        st.info(f"Files in current directory: {os.listdir('.')}")
+        return [], 0, 0
 
     progress_bar = st.progress(0)
     status = st.empty()
@@ -52,12 +54,12 @@ def search_italic_text(search_word, folder_path):
             file_count += 1
             processed += 1
             progress_bar.progress(min(processed / max(total_files, 1), 1.0))
-            status.text(f"Searching: {filename}")
+            status.text(f"Searching {filename}...")
 
             try:
                 doc = Document(file_path)
                 for p in doc.paragraphs:
-                    italic_text = "".join(run.text for run in p.runs if run.italic)
+                    italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
                     if italic_text and re.search(pattern, italic_text):
                         italic_text = italic_text.strip()
                         results.append({
@@ -65,69 +67,50 @@ def search_italic_text(search_word, folder_path):
                             "text": italic_text
                         })
                         match_count += 1
-            except:
+            except Exception as e:
                 continue
 
     progress_bar.progress(1.0)
     return results, file_count, match_count
 
-def generate_word_document(results, search_word):
-    doc = Document()
-    for section in doc.sections:
-        section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-
-    doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
-
-    for res in results:
-        doc.add_paragraph(res["file"], style='Heading 3')
-        para = doc.add_paragraph()
-        for word in res["text"].split():
-            run = para.add_run(word + " ")
-            run.italic = True
-            if re.search(rf'(?<!\w){re.escape(search_word)}(?!\w)', word, re.IGNORECASE):
-                highlight_run(run)
-
-    doc.add_page_break()
-    doc.add_heading("Summary", level=2)
-    doc.add_paragraph(f"Found {len(results)} matches for '{search_word}' in Jesus' messages to Mother Clare.")
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-        doc.save(tmp.name)
-        return tmp.name
-
-# Search Interface
+# ====================== SEARCH ======================
 search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith")
 
-if st.button("Search", type="primary"):
+if st.button("🔍 Search", type="primary"):
     if not search_word:
-        st.warning("Please enter a search word.")
+        st.warning("Please enter a word.")
     else:
-        with st.spinner("Searching..."):
+        with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
 
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
-            # Display Results on Page
-            st.subheader("Search Results")
-            for res in results[:30]:   # Show first 30 on screen
-                with st.expander(f"📄 {res['file']}"):
+            st.subheader("📋 Search Results")
+            for i, res in enumerate(results):
+                with st.expander(f"{i+1}. {res['file']}", expanded=(i < 5)):
                     st.markdown(f"**{res['text']}**")
 
-            if len(results) > 30:
-                st.info(f"Showing first 30 of {len(results)} total matches.")
+            # Download button
+            doc = Document()
+            # (simplified document generation)
+            doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+            for res in results:
+                doc.add_paragraph(res["file"])
+                p = doc.add_paragraph(res["text"])
+                for run in p.runs:
+                    run.italic = True
 
-            # Download Full Report
-            docx_path = generate_word_document(results, search_word)
-            with open(docx_path, "rb") as f:
-                st.download_button(
-                    label="📥 Download Full Report as Word Document",
-                    data=f,
-                    file_name=f"Jesus speaks about {search_word}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
-            os.unlink(docx_path)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+                doc.save(tmp.name)
+                with open(tmp.name, "rb") as f:
+                    st.download_button(
+                        label="📥 Download Full Report (Word Document)",
+                        data=f,
+                        file_name=f"Jesus speaks about {search_word}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
         else:
-            st.info("No matches found for this word.")
+            st.info("No matches found.")
 
-st.caption("Heartdwellers Search Tool — Built for the community")
+st.caption("Heartdwellers Search Tool")
