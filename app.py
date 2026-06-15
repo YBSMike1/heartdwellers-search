@@ -9,12 +9,12 @@ import tempfile
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 
-# Top Banner - Smaller and Centered
+# Top Banner - Larger and Centered
 top_banner = "Newest banner.png"
 if os.path.exists(top_banner):
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image(top_banner, width=320)
+        st.image(top_banner, width=620)
 else:
     st.warning("Top banner image not found.")
 
@@ -137,12 +137,12 @@ if st.button("🔍 Search", type="primary"):
         else:
             st.info("No matches found.")
 
-# Bottom Banner - Smaller and Centered
+# Bottom Banner - Larger and Centered
 bottom_banner = "Bottom banner Std.png"
 if os.path.exists(bottom_banner):
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.image(bottom_banner, width=300)
+        st.image(bottom_banner, width=620)
 else:
     st.caption("💡 Tip: Upload 'Bottom banner Std.png' for full styling.")
 
