@@ -13,10 +13,11 @@ st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
 # Path to your docx files on the server (you will set this)
+# Path to your docx files
 DOCX_FOLDER = st.text_input(
-    "Path to Heartdwellers Docxs folder",
-    value="/app/Heartdwellers Docxs",  # Change this after deployment
-    help="Full path where your .docx files are stored on the server"
+    "Full path to your Heartdwellers .docx files",
+    value="Heartdwellers Docxs",   # We'll change this after uploading
+    help="This must match the folder name you upload"
 )
 
 seen_italic_texts = set()
