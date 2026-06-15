@@ -6,11 +6,11 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
 import tempfile
-from rapidfuzz import fuzz, process
+from rapidfuzz import fuzz
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 st.title("❤️ Heartdwellers Search Tool")
-st.markdown("**Search Jesus' messages to Mother Clare** (Fuzzy search enabled for typos)")
+st.markdown("**Search Jesus' messages to Mother Clare** (Fuzzy search enabled)")
 
 DOCX_FOLDER = st.text_input(
     "Path to Heartdwellers Docxs folder",
@@ -18,7 +18,7 @@ DOCX_FOLDER = st.text_input(
     help="Exact folder name you uploaded"
 )
 
-def search_italic_text(search_word, folder_path, similarity_threshold=75):
+def search_italic_text(search_word, folder_path, similarity_threshold=70):
     results = []
     file_count = 0
     match_count = 0
@@ -53,7 +53,6 @@ def search_italic_text(search_word, folder_path, similarity_threshold=75):
                     italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
                     if italic_text:
                         italic_text = italic_text.strip()
-                        # Fuzzy matching
                         score = fuzz.partial_ratio(search_word.lower(), italic_text.lower())
                         if score >= similarity_threshold:
                             results.append({
@@ -66,7 +65,6 @@ def search_italic_text(search_word, folder_path, similarity_threshold=75):
                 continue
 
     progress_bar.progress(1.0)
-    # Sort by similarity score (best matches first)
     results.sort(key=lambda x: x["score"], reverse=True)
     return results, file_count, match_count
 
@@ -78,7 +76,7 @@ if st.button("🔍 Search", type="primary"):
         st.warning("Please enter a word.")
     else:
         with st.spinner("Searching messages (fuzzy matching enabled)..."):
-            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER, similarity_threshold=70)
+            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
 
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
@@ -86,6 +84,7 @@ if st.button("🔍 Search", type="primary"):
             st.subheader("📋 Search Results")
             
             for i, res in enumerate(results):
+                # Highlight the original searched word even with typos
                 highlighted = re.sub(
                     rf'(?<!\w){re.escape(search_word)}(?!\w)', 
                     f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
@@ -93,7 +92,7 @@ if st.button("🔍 Search", type="primary"):
                     flags=re.IGNORECASE
                 )
                 
-                with st.expander(f"📄 {res['file']} (Match: {res['score']}%)", expanded=(i < 5)):
+                with st.expander(f"📄 {res['file']} (Match: {res['score']}%)", expanded=True):
                     st.markdown(f"""
                     <div style="font-family: Calibri, Arial, sans-serif; 
                                 font-size: 0.92em; 
