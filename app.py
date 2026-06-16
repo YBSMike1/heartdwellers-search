@@ -34,26 +34,33 @@ st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
 DOCX_FOLDER = "Heartdwellers Docxs"
-WORDS_API_KEY = "e10c87331emshb838f6dd5aeb4e8p1a63dbjsn139eec4460a9"  # Your key
+WORDS_API_KEY = "e10c87331emshb838f6dd5aeb4e8p1a63dbjsn139eec4460a9"
 
 def get_word_definition(word):
+    if not word or len(word) < 2:
+        return "Please enter a valid word."
     try:
-        url = f"https://wordsapiv1.p.rapidapi.com/words/{word}/definitions"
+        url = f"https://wordsapiv1.p.rapidapi.com/words/{word.lower()}/definitions"
         headers = {
             'x-rapidapi-key': WORDS_API_KEY,
             'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"
         }
-        response = requests.get(url, headers=headers, timeout=5)
+        response = requests.get(url, headers=headers, timeout=8)
+        
         if response.status_code == 200:
             data = response.json()
-            if data.get("definitions"):
+            if data.get("definitions") and len(data["definitions"]) > 0:
                 return data["definitions"][0].get("definition", "No definition found.")
-    except:
-        pass
-    return "Definition not available at this time."
+            else:
+                return "No definition found for this word."
+        elif response.status_code == 404:
+            return "Word not found in dictionary."
+        else:
+            return f"API error (Status: {response.status_code})"
+    except Exception as e:
+        return "Definition not available at this time. (API temporarily unavailable)"
 
 def extract_date_from_path(file_path):
-    """Extract date from folder name for sorting (e.g., Jan 2020, Sep 2025)"""
     try:
         match = re.search(r'(\w+\s+\d{4})', file_path)
         if match:
@@ -61,7 +68,7 @@ def extract_date_from_path(file_path):
             return datetime.strptime(date_str, "%b %Y")
     except:
         pass
-    return datetime.min  # Oldest if no date found
+    return datetime.min
 
 def search_italic_text(search_word, folder_path):
     results = []
@@ -124,10 +131,10 @@ if st.button("🔍 Search", type="primary"):
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
             # Dictionary Definition at the top
-            definition = get_word_definition(search_word.lower())
-            st.info(f"**Dictionary Definition of '{search_word}':** {definition}")
+            definition = get_word_definition(search_word)
+            st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
 
-            # Sort results by folder date
+            # Sort results by folder date (newest first)
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
 
             # Top Banner
