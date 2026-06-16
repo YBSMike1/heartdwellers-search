@@ -11,47 +11,48 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Lighter background + very aggressive search box styling
+# Very light background + maximum force on search input
 st.markdown("""
 <style>
-    .stApp, .main, .block-container {
-        background-color: #f8f8f8 !important;   /* Much lighter */
+    .stApp, .main, .block-container, body {
+        background-color: #fafafa !important;
     }
     
-    /* Top text and labels */
+    /* Top text */
     h1, h2, h3, .stMarkdown, label, .stTextInput label {
         color: #1e1e2e !important;
     }
     
-    /* Search input box - Force solid black text */
-    .stTextInput input, 
+    /* Search input - Maximum force for black text */
+    .stTextInput input,
     .stTextInput textarea,
     input[type="text"],
     .stTextInput > div > div > input,
-    .stTextInput > div > input {
+    .stTextInput > div > input,
+    .stTextInput input {
         color: #000000 !important;
         background-color: #ffffff !important;
-        border: 2px solid #333333 !important;
+        border: 3px solid #333333 !important;
         font-weight: 700 !important;
+        font-size: 1.1em !important;
     }
     
     .stTextInput input::placeholder {
         color: #555555 !important;
     }
     
-    /* All status and result text */
+    /* Status text */
     .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError {
         color: #1e1e2e !important;
     }
     
-    /* Dark mode support */
+    /* Dark mode */
     @media (prefers-color-scheme: dark) {
-        .stApp, .main, .block-container {
+        .stApp, .main, .block-container, body {
             background-color: #2c2c2c !important;
         }
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
-        .stTextInput input, .stTextInput textarea,
-        input[type="text"], .stTextInput > div > div > input,
+        .stTextInput input, .stTextInput textarea, input[type="text"],
         .stText, .stSpinner, .stProgress label, .stEmpty,
         .stSuccess, .stInfo, .stWarning, .stError {
             color: #f0f0f0 !important;
@@ -99,8 +100,8 @@ def get_word_definition(word):
             return "Word not found in dictionary."
         else:
             return f"API error (Status: {response.status_code})"
-    except Exception as e:
-        return "Definition not available at this time. (API temporarily unavailable)"
+    except:
+        return "Definition not available at this time."
 
 def extract_date_from_path(file_path):
     try:
@@ -172,14 +173,11 @@ if st.button("🔍 Search", type="primary"):
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
-            # Dictionary Definition at the top
             definition = get_word_definition(search_word)
             st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
 
-            # Sort results by folder date (newest first)
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
 
-            # Top Banner
             top_banner = "Newest banner.png"
             if os.path.exists(top_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
@@ -188,7 +186,7 @@ if st.button("🔍 Search", type="primary"):
 
             st.subheader("📋 Search Results")
             
-            for i, res in enumerate(results):
+            for res in results:
                 highlighted = re.sub(
                     rf'(?<!\w){re.escape(search_word)}(?!\w)', 
                     f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
@@ -210,7 +208,7 @@ if st.button("🔍 Search", type="primary"):
                     </div>
                     """, unsafe_allow_html=True)
 
-            # Download Full Report
+            # Download
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -233,7 +231,6 @@ if st.button("🔍 Search", type="primary"):
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
 
-            # Bottom Banner
             bottom_banner = "Bottom banner Std.png"
             if os.path.exists(bottom_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
