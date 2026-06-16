@@ -9,20 +9,23 @@ import tempfile
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 
-# Strong CSS for folder headers (thicker outline) and lighter result boxes
+# Stronger CSS for folder headers (thicker border + lighter background)
 st.markdown("""
 <style>
-    /* Thicker outline for folder headers */
-    div[data-testid="stExpander"] > div > div > div > div > button {
+    /* Target folder header (expander button) */
+    button[aria-expanded="true"], button[aria-expanded="false"] {
         background-color: #f8e8f0 !important;
-        border: 3px solid #D81B60 !important;
-        border-radius: 8px 8px 0 0 !important;
+        border: 4px solid #D81B60 !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
     }
     
-    /* Lighter pink for result text boxes */
-    div[data-testid="stExpander"] div[role="region"] {
+    /* Result text boxes - lighter pink */
+    .stExpander div[role="region"] {
         background-color: #FFCCE0 !important;
         border-left: 6px solid #D81B60 !important;
+        padding: 18px !important;
+        border-radius: 0 0 10px 10px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -80,7 +83,6 @@ def search_italic_text(search_word, folder_path):
     progress_bar.progress(1.0)
     return results, file_count, match_count
 
-# ====================== SEARCH ======================
 search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith")
 
 if st.button("🔍 Search", type="primary"):
