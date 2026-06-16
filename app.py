@@ -9,30 +9,39 @@ import tempfile
 import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from rapidfuzz import fuzz
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Light grey page + MAXIMUM FORCE black text in search box
+# Light grey page + MAXIMUM FORCE white background + black text in search box (light mode)
 st.markdown("""
 <style>
     /* Light grey page */
     .stApp, .main, .block-container, body, html { background-color: #f0f0f0 !important; }
     .main .block-container { background-color: #f8f8f8 !important; border-radius: 12px; padding: 2rem; }
 
-    /* MAXIMUM FORCE on search input - you will see what you type */
+    /* MAXIMUM FORCE: white background + solid black text so you can ALWAYS see what you type */
     .stTextInput input,
     .stTextInput > div > div > input,
     .stTextInput > div > input,
     input[type="text"],
     .stTextInput textarea,
-    .st-emotion-cache-1g8v9r8 input {
+    .st-emotion-cache-1g8v9r8 input,
+    div[data-baseweb="input"] input {
         color: #000000 !important;
         background-color: #ffffff !important;
         border: 3px solid #222222 !important;
         font-weight: 700 !important;
         font-size: 1.15em !important;
     }
-    .stTextInput input::placeholder { color: #444444 !important; }
+    .stTextInput input::placeholder { color: #555555 !important; }
+
+    /* Hide the "Press Enter to apply" hint that appears with forms */
+    .stForm div[role="alert"],
+    .stTextInput div[title*="Press Enter"],
+    .stTextInput div[data-testid="stMarkdownContainer"] p {
+        display: none !important;
+    }
 
     /* All other text readable */
     h1, h2, h3, .stMarkdown, label, .stTextInput label,
@@ -41,12 +50,16 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* Dark mode fallback */
+    /* Dark mode fallback - dark input with white text */
     @media (prefers-color-scheme: dark) {
         .stApp, .main, .block-container, body, html { background-color: #2c2c2c !important; }
         .main .block-container { background-color: #3a3a3a !important; }
         h1, h2, h3, .stMarkdown, label, .stTextInput label, .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, div[data-testid="stText"] { color: #f0f0f0 !important; }
-        .stTextInput input, .stTextInput > div > div > input, input[type="text"] { color: #ffffff !important; background-color: #444444 !important; }
+        .stTextInput input, .stTextInput > div > div > input, input[type="text"] {
+            color: #ffffff !important;
+            background-color: #3a3a3a !important;
+            border: 3px solid #888888 !important;
+        }
     }
 
     /* Expander styles */
@@ -81,21 +94,46 @@ def extract_date_from_path(file_path):
     except: pass
     return datetime.min
 
-def search_file(file_path, search_word, pattern):
+def find_fuzzy_match(text, search_word, threshold=82):
+    """Return True + the matched word if a fuzzy match is found."""
+    if not text or not search_word:
+        return False, None
+    search_lower = search_word.lower().strip()
+    words = re.findall(r'\b\w+\b', text)
+    best_ratio = 0
+    best_word = None
+    for w in words:
+        ratio = fuzz.ratio(w.lower(), search_lower)
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_word = w
+    if best_ratio >= threshold:
+        return True, best_word
+    return False, None
+
+def search_file(file_path, search_word):
     try:
         doc = Document(file_path)
         for p in doc.paragraphs:
             italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
-            if italic_text and re.search(pattern, italic_text):
-                return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip()}
-    except: pass
+            if italic_text:
+                if " " in search_word:
+                    # Phrase: use exact match
+                    if re.search(re.escape(search_word), italic_text, re.IGNORECASE):
+                        return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip(), "matched_word": search_word}
+                else:
+                    # Single word: use fuzzy
+                    matched, matched_word = find_fuzzy_match(italic_text, search_word)
+                    if matched:
+                        return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip(), "matched_word": matched_word}
+    except:
+        pass
     return None
 
 def search_italic_text(search_word, folder_path):
     results = []
     file_count = 0
     match_count = 0
-    pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
     if not os.path.exists(folder_path):
         st.error(f"Folder not found: {folder_path}")
         return [], 0, 0
@@ -104,7 +142,7 @@ def search_italic_text(search_word, folder_path):
     all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
     total_files = len(all_files)
     with ThreadPoolExecutor(max_workers=12) as executor:
-        future_to_file = {executor.submit(search_file, f, search_word, pattern): f for f in all_files}
+        future_to_file = {executor.submit(search_file, f, search_word): f for f in all_files}
         for i, future in enumerate(as_completed(future_to_file)):
             result = future.result()
             if result:
@@ -115,9 +153,12 @@ def search_italic_text(search_word, folder_path):
             status.text(f"Searching: {os.path.basename(future_to_file[future])}")
     return results, file_count, match_count
 
-search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith")
+# FORM so Enter key works cleanly
+with st.form("search_form", clear_on_submit=False):
+    search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith, lovve (typo ok)")
+    submitted = st.form_submit_button("🔍 Search", type="primary")
 
-if st.button("🔍 Search", type="primary"):
+if submitted:
     if not search_word:
         st.warning("Please enter a word.")
     else:
@@ -133,7 +174,13 @@ if st.button("🔍 Search", type="primary"):
                 with col2: st.image("Newest banner.png", width=1240)
             st.subheader("📋 Search Results")
             for res in results:
-                highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
+                word_to_highlight = res.get("matched_word", search_word)
+                highlighted = re.sub(
+                    rf'(?<!\w){re.escape(word_to_highlight)}(?!\w)',
+                    f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{word_to_highlight}</span>',
+                    res['text'],
+                    flags=re.IGNORECASE
+                )
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.92em; line-height: 1.75; background-color: #FFCCE0; padding: 18px; border-radius: 10px; border-left: 6px solid #D81B60; color: #1e1e2e;">{highlighted}</div>""", unsafe_allow_html=True)
             doc = Document()
