@@ -6,6 +6,8 @@ from docx.shared import Pt, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
 import tempfile
+import requests
+from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
@@ -32,6 +34,34 @@ st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
 DOCX_FOLDER = "Heartdwellers Docxs"
+WORDS_API_KEY = "e10c87331emshb838f6dd5aeb4e8p1a63dbjsn139eec4460a9"  # Your key
+
+def get_word_definition(word):
+    try:
+        url = f"https://wordsapiv1.p.rapidapi.com/words/{word}/definitions"
+        headers = {
+            'x-rapidapi-key': WORDS_API_KEY,
+            'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"
+        }
+        response = requests.get(url, headers=headers, timeout=5)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("definitions"):
+                return data["definitions"][0].get("definition", "No definition found.")
+    except:
+        pass
+    return "Definition not available at this time."
+
+def extract_date_from_path(file_path):
+    """Extract date from folder name for sorting (e.g., Jan 2020, Sep 2025)"""
+    try:
+        match = re.search(r'(\w+\s+\d{4})', file_path)
+        if match:
+            date_str = match.group(1)
+            return datetime.strptime(date_str, "%b %Y")
+    except:
+        pass
+    return datetime.min  # Oldest if no date found
 
 def search_italic_text(search_word, folder_path):
     results = []
@@ -92,6 +122,13 @@ if st.button("🔍 Search", type="primary"):
 
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
+
+            # Dictionary Definition at the top
+            definition = get_word_definition(search_word.lower())
+            st.info(f"**Dictionary Definition of '{search_word}':** {definition}")
+
+            # Sort results by folder date
+            results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
 
             # Top Banner
             top_banner = "Newest banner.png"
