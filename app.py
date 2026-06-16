@@ -11,7 +11,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Strong light grey for the entire page and main content box
+# Strong light grey for the entire page + clean light grey for the main content box
 st.markdown("""
 <style>
     /* Force the entire page light grey */
