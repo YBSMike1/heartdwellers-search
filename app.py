@@ -81,7 +81,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ============ ALL FUNCTIONS DEFINED FIRST ============
+# ============ CONFIG ============
+DOCX_FOLDER = "Heartdwellers Docxs"
+
+# ============ FUNCTIONS ============
 
 def get_word_definition(word):
     if not word or len(word) < 2:
@@ -194,16 +197,16 @@ def search_italic_text(search_word, folder_path):
 
     return results, file_count, match_count
 
-# ============ UI CODE ============
+# ============ UI ============
 
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
 # === TOP BANNER (Before search) ===
 if os.path.exists("Newest banner.png"):
-    col1, col2, col3 = st.columns([0.3, 3.4, 0.3])
+    col1, col2, col3 = st.columns([0.2, 3.6, 0.2])
     with col2:
-        st.image("Newest banner.png", width=2800)
+        st.image("Newest banner.png", width=3200)
 
 st.markdown("### Enter a word or phrase")
 
@@ -218,7 +221,7 @@ if search_clicked:
         st.warning("Please enter a word or phrase.")
     else:
         with st.spinner("Searching messages..."):
-            results, file_count, match_count = search_italic_text(search_word, "Heartdwellers Docxs")
+            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
         if results:
             st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             definition = get_word_definition(search_word)
@@ -248,9 +251,9 @@ if search_clicked:
 
             # === BOTTOM BANNER (After results) ===
             if os.path.exists("Bottom banner Std.png"):
-                col1, col2, col3 = st.columns([0.3, 3.4, 0.3])
+                col1, col2, col3 = st.columns([0.2, 3.6, 0.2])
                 with col2:
-                    st.image("Bottom banner Std.png", width=2800)
+                    st.image("Bottom banner Std.png", width=3200)
         else:
             st.info("No matches found.")
 
