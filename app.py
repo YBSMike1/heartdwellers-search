@@ -11,7 +11,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Stronger CSS for search input visibility
+# Very strong CSS for search input visibility in light mode
 st.markdown("""
 <style>
     .stApp, .main {
@@ -23,14 +23,15 @@ st.markdown("""
         color: #1e1e2e !important;
     }
     
-    /* Search input box - Force dark text + white background in light mode */
+    /* Search input - Force black text + white background */
     .stTextInput input, 
     .stTextInput textarea,
     input[type="text"],
     .stTextInput > div > div > input {
-        color: #1e1e2e !important;
+        color: #000000 !important;
         background-color: #ffffff !important;
-        border: 2px solid #ccc !important;
+        border: 2px solid #999999 !important;
+        font-weight: 500 !important;
     }
     
     .stTextInput input::placeholder {
