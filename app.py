@@ -79,12 +79,12 @@ if st.button("🔍 Search", type="primary"):
         if results:
             st.success(f"✅ Found {match_count} matches in {file_count} files.")
 
-            # Top Banner - 50% Bigger and Centered
+            # Top Banner
             top_banner = "Newest banner.png"
             if os.path.exists(top_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(top_banner, width=930)
+                    st.image(top_banner, width=620)
 
             st.subheader("📋 Search Results")
             
@@ -101,7 +101,7 @@ if st.button("🔍 Search", type="primary"):
                     <div style="font-family: Calibri, Arial, sans-serif; 
                                 font-size: 0.92em; 
                                 line-height: 1.75; 
-                                background-color: #F06292; 
+                                background-color: #FF9EC1;   /* Lighter pink */
                                 padding: 18px; 
                                 border-radius: 10px; 
                                 border-left: 6px solid #D81B60; 
@@ -133,12 +133,12 @@ if st.button("🔍 Search", type="primary"):
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
 
-            # Bottom Banner - 50% Bigger and Centered
+            # Bottom Banner
             bottom_banner = "Bottom banner Std.png"
             if os.path.exists(bottom_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(bottom_banner, width=930)
+                    st.image(bottom_banner, width=620)
         else:
             st.info("No matches found.")
 
