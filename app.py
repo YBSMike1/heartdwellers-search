@@ -23,7 +23,7 @@ st.markdown("""
         color: #1e1e2e !important;
     }
     
-    /* Search input box - dark text on light mode, light text on dark mode */
+    /* Search input box */
     .stTextInput input {
         color: #1e1e2e !important;
     }
@@ -170,12 +170,12 @@ if st.button("🔍 Search", type="primary"):
             # Sort results by folder date (newest first)
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
 
-            # Top Banner
+            # Top Banner - Large size
             top_banner = "Newest banner.png"
             if os.path.exists(top_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(top_banner, width=620)
+                    st.image(top_banner, width=1240)
 
             st.subheader("📋 Search Results")
             
@@ -224,12 +224,12 @@ if st.button("🔍 Search", type="primary"):
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
 
-            # Bottom Banner
+            # Bottom Banner - Large size
             bottom_banner = "Bottom banner Std.png"
             if os.path.exists(bottom_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(bottom_banner, width=620)
+                    st.image(bottom_banner, width=1240)
         else:
             st.info("No matches found.")
 
