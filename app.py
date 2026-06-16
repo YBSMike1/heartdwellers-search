@@ -15,7 +15,7 @@ st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 st.markdown("""
 <style>
     .stApp, .main, .block-container, body {
-        background-color: #e0e0e0 !important;   /* Medium grey */
+        background-color: #e8e8e8 !important;   /* Medium grey */
     }
    
     /* Top text */
