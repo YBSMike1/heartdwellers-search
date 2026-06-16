@@ -11,11 +11,19 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Much lighter page background
+# Light content area + medium page background
 st.markdown("""
 <style>
     .stApp, .main, .block-container, body {
-        background-color: #f8f8f8 !important;   /* Much lighter */
+        background-color: #e0e0e0 !important;
+    }
+    
+    /* Main content area (search + results box) - much lighter */
+    .main .block-container {
+        background-color: #f8f8f8 !important;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
    
     /* Top text */
@@ -52,6 +60,9 @@ st.markdown("""
     @media (prefers-color-scheme: dark) {
         .stApp, .main, .block-container, body {
             background-color: #2c2c2c !important;
+        }
+        .main .block-container {
+            background-color: #3a3a3a !important;
         }
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
         .stTextInput input, .stTextInput textarea, input[type="text"],
