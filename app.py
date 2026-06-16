@@ -11,20 +11,25 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Improved styling for visibility in light and dark mode
+# Comprehensive styling for light + dark mode visibility
 st.markdown("""
 <style>
     .stApp, .main {
         background-color: #f0f0f0 !important;
     }
     
-    /* Top text visibility */
+    /* Top text and labels */
     h1, h2, h3, .stMarkdown, label, .stTextInput label {
         color: #1e1e2e !important;
     }
     
-    /* Searching status text */
-    .stText, .stSpinner, .stProgress label, .stEmpty {
+    /* Search input and placeholder text */
+    .stTextInput input, .stTextInput input::placeholder {
+        color: #1e1e2e !important;
+    }
+    
+    /* All status, progress, and spinner text below search bar */
+    .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError {
         color: #1e1e2e !important;
     }
     
@@ -34,7 +39,9 @@ st.markdown("""
             background-color: #2c2c2c !important;
         }
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
-        .stText, .stSpinner, .stProgress label, .stEmpty {
+        .stTextInput input, .stTextInput input::placeholder,
+        .stText, .stSpinner, .stProgress label, .stEmpty,
+        .stSuccess, .stInfo, .stWarning, .stError {
             color: #f0f0f0 !important;
         }
     }
