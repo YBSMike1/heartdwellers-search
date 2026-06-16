@@ -14,10 +14,10 @@ import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Dark purple theme matching Heart Dwellers website + strong button fix
+# Dark purple theme + VERY STRONG button fix
 st.markdown("""
 <style>
-    /* Dark purple background like the website */
+    /* Dark purple background */
     .stApp, .main, .block-container, body, html {
         background-color: #4A0E4E !important;
     }
@@ -28,7 +28,7 @@ st.markdown("""
         box-shadow: 0 8px 24px rgba(0,0,0,0.45);
     }
 
-    /* Title - pink/red accent */
+    /* Title */
     h1 {
         color: #FF4D94 !important;
         text-shadow: 0 0 14px rgba(255, 77, 148, 0.7);
@@ -47,32 +47,38 @@ st.markdown("""
         padding: 12px 16px !important;
     }
 
-    /* SEARCH BUTTON - FULLY VISIBLE + matches website pill style */
-    .stForm button[kind="primary"],
+    /* ========== SEARCH BUTTON - MAXIMUM FORCE ========== */
+    div[data-testid="stForm"] button[kind="primary"],
     button[data-testid="stFormSubmitButton"],
-    .stForm .stButton button,
-    button[data-testid="baseButton-primary"] {
+    .stForm button,
+    button[data-testid="baseButton-primary"],
+    .stButton button[kind="primary"] {
         background-color: #D81B60 !important;
         color: #ffffff !important;
         border: 4px solid #FF9EC1 !important;
         border-radius: 50px !important;
         font-weight: 800 !important;
-        font-size: 1.15rem !important;
-        padding: 0.75rem 2.4rem !important;
-        min-height: 3.5rem !important;
-        min-width: 190px !important;
+        font-size: 1.2rem !important;
+        padding: 0.8rem 2.6rem !important;
+        min-height: 3.6rem !important;
+        min-width: 200px !important;
+        width: auto !important;
         box-shadow: 0 6px 18px rgba(216, 27, 96, 0.65) !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.35) !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4) !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
+        white-space: nowrap !important;
+        line-height: 1.2 !important;
     }
-    .stForm button[kind="primary"]:hover {
+
+    div[data-testid="stForm"] button[kind="primary"]:hover,
+    button[data-testid="stFormSubmitButton"]:hover {
         background-color: #FF4D94 !important;
         border-color: #ffffff !important;
     }
 
-    /* Hide the "Press Enter to submit form" hint */
+    /* Hide "Press Enter to submit form" hint */
     .stForm [data-testid="stMarkdownContainer"],
     .stForm small, .stForm [role="alert"] {
         display: none !important;
@@ -83,13 +89,13 @@ st.markdown("""
         opacity: 0 !important;
     }
 
-    /* All other text readable on dark purple */
+    /* All other text */
     h2, h3, .stMarkdown, label, .stTextInput label,
-    .stText, .stSpinner, .stProgress label, .stSuccess, .stInfo, .stWarning, .stError {
+    .stText, .stSpinner, .stProgress label, .stSuccess, .stInfo {
         color: #f5e6f0 !important;
     }
 
-    /* Result boxes - matching pink theme */
+    /* Result boxes */
     div[data-testid="stExpander"] > div > div > div > div > button {
         background-color: #5C1A60 !important;
         border: 2px solid #D81B60 !important;
@@ -102,7 +108,6 @@ st.markdown("""
         border-radius: 0 12px 12px 0 !important;
     }
 
-    /* Progress bar */
     .stProgress > div > div > div {
         background-color: #D81B60 !important;
     }
@@ -218,7 +223,7 @@ def search_italic_text(search_word, folder_path):
 
     return results, file_count, match_count
 
-# FORM + fully visible styled button
+# FORM + button
 with st.form("search_form", clear_on_submit=False):
     search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith (typos ok)")
     submitted = st.form_submit_button("🔍 Search", type="primary")
