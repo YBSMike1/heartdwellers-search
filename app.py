@@ -235,7 +235,7 @@ if st.button("🔍 Search", type="primary"):
             if os.path.exists(bottom_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(bottom_banner, width=1240)
+                    st.image(bottom_banner, width=2280)
         else:
             st.info("No matches found.")
 
