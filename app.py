@@ -11,7 +11,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Medium grey background + working search input styling
+# Medium grey background + improved status text visibility
 st.markdown("""
 <style>
     .stApp, .main, .block-container, body {
@@ -23,13 +23,12 @@ st.markdown("""
         color: #1e1e2e !important;
     }
    
-    /* Search input - Solid black text */
+    /* Search input */
     .stTextInput input,
     .stTextInput textarea,
     input[type="text"],
     .stTextInput > div > div > input,
-    .stTextInput > div > input,
-    .stTextInput input {
+    .stTextInput > div > input {
         color: #000000 !important;
         background-color: #ffffff !important;
         border: 3px solid #333333 !important;
@@ -41,9 +40,10 @@ st.markdown("""
         color: #555555 !important;
     }
    
-    /* Status text */
+    /* Status / Searching text */
     .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError {
         color: #1e1e2e !important;
+        font-weight: 500 !important;
     }
    
     /* Dark mode */
@@ -154,76 +154,72 @@ def search_italic_text(search_word, folder_path):
     progress_bar.progress(1.0)
     return results, file_count, match_count
 
-# Use form so Enter key submits
-with st.form("search_form", clear_on_submit=False):
-    search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith", key="search_input")
-    submitted = st.form_submit_button("🔍 Search", type="primary")
+search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith")
 
-if submitted and search_word:
-    with st.spinner("Searching messages..."):
-        results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
-
-    if results:
-        st.success(f"✅ Found {match_count} matches in {file_count} files.")
-        definition = get_word_definition(search_word)
-        st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
-
-        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-
-        top_banner = "Newest banner.png"
-        if os.path.exists(top_banner):
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                st.image(top_banner, width=1240)
-
-        st.subheader("📋 Search Results")
-       
-        for res in results:
-            highlighted = re.sub(
-                rf'(?<!\w){re.escape(search_word)}(?!\w)',
-                f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>',
-                res['text'],
-                flags=re.IGNORECASE
-            )
-           
-            with st.expander(f"📄 {res['file']}", expanded=True):
-                st.markdown(f"""
-                <div style="font-family: Calibri, Arial, sans-serif;
-                            font-size: 0.92em;
-                            line-height: 1.75;
-                            background-color: #FFCCE0;
-                            padding: 18px;
-                            border-radius: 10px;
-                            border-left: 6px solid #D81B60;
-                            color: #1e1e2e;">
-                    {highlighted}
-                </div>
-                """, unsafe_allow_html=True)
-        # Download
-        doc = Document()
-        for section in doc.sections:
-            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-        doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
-        for res in results:
-            doc.add_paragraph(res["file"], style='Heading 3')
-            p = doc.add_paragraph(res["text"])
-            for run in p.runs:
-                run.italic = True
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-            doc.save(tmp.name)
-            with open(tmp.name, "rb") as f:
-                st.download_button(
-                    label="📥 Download Full Report (Word Document)",
-                    data=f,
-                    file_name=f"Jesus speaks about {search_word}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
-        bottom_banner = "Bottom banner Std.png"
-        if os.path.exists(bottom_banner):
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                st.image(bottom_banner, width=1240)
+if st.button("🔍 Search", type="primary"):
+    if not search_word:
+        st.warning("Please enter a word.")
     else:
-        st.info("No matches found.")
+        with st.spinner("Searching messages..."):
+            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+        if results:
+            st.success(f"✅ Found {match_count} matches in {file_count} files.")
+            definition = get_word_definition(search_word)
+            st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
+            results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+            top_banner = "Newest banner.png"
+            if os.path.exists(top_banner):
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    st.image(top_banner, width=1240)
+            st.subheader("📋 Search Results")
+           
+            for res in results:
+                highlighted = re.sub(
+                    rf'(?<!\w){re.escape(search_word)}(?!\w)',
+                    f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>',
+                    res['text'],
+                    flags=re.IGNORECASE
+                )
+               
+                with st.expander(f"📄 {res['file']}", expanded=True):
+                    st.markdown(f"""
+                    <div style="font-family: Calibri, Arial, sans-serif;
+                                font-size: 0.92em;
+                                line-height: 1.75;
+                                background-color: #FFCCE0;
+                                padding: 18px;
+                                border-radius: 10px;
+                                border-left: 6px solid #D81B60;
+                                color: #1e1e2e;">
+                        {highlighted}
+                    </div>
+                    """, unsafe_allow_html=True)
+            # Download
+            doc = Document()
+            for section in doc.sections:
+                section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+            doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+            for res in results:
+                doc.add_paragraph(res["file"], style='Heading 3')
+                p = doc.add_paragraph(res["text"])
+                for run in p.runs:
+                    run.italic = True
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+                doc.save(tmp.name)
+                with open(tmp.name, "rb") as f:
+                    st.download_button(
+                        label="📥 Download Full Report (Word Document)",
+                        data=f,
+                        file_name=f"Jesus speaks about {search_word}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+            bottom_banner = "Bottom banner Std.png"
+            if os.path.exists(bottom_banner):
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    st.image(bottom_banner, width=1240)
+        else:
+            st.info("No matches found.")
 
 st.caption("Heartdwellers Search Tool — Built for the community")
