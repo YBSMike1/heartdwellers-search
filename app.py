@@ -86,9 +86,9 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 
 # === TOP BANNER (Always visible, before search) ===
 if os.path.exists("Newest banner.png"):
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([0.5, 3, 0.5])
     with col2:
-        st.image("Newest banner.png", width=2480)
+        st.image("Newest banner.png", width=2800)
 
 st.markdown("### Enter a word or phrase")
 
@@ -131,9 +131,9 @@ if search_clicked:
 
             # === BOTTOM BANNER (After results) ===
             if os.path.exists("Bottom banner Std.png"):
-                col1, col2, col3 = st.columns([1, 2, 1])
+                col1, col2, col3 = st.columns([0.5, 3, 0.5])
                 with col2:
-                    st.image("Bottom banner Std.png", width=2480)
+                    st.image("Bottom banner Std.png", width=2800)
         else:
             st.info("No matches found.")
 
