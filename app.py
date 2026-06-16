@@ -9,6 +9,19 @@ import tempfile
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 
+# Custom CSS for expander headers
+st.markdown("""
+<style>
+    .stExpander header {
+        background-color: #f0e6eb !important;
+        border-radius: 8px;
+    }
+    .stExpander header:hover {
+        background-color: #e6d6db !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
