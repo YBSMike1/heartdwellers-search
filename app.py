@@ -13,7 +13,7 @@ from rapidfuzz import fuzz
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Light grey page + MAXIMUM FORCE white background + black text in search box (light mode)
+# Light grey page + strong input styling + HIDE the "Press Enter to submit form" hint
 st.markdown("""
 <style>
     /* Light grey page */
@@ -36,11 +36,20 @@ st.markdown("""
     }
     .stTextInput input::placeholder { color: #555555 !important; }
 
-    /* Hide the "Press Enter to apply" hint that appears with forms */
-    .stForm div[role="alert"],
-    .stTextInput div[title*="Press Enter"],
-    .stTextInput div[data-testid="stMarkdownContainer"] p {
+    /* AGGRESSIVELY HIDE the "Press Enter to submit form" hint and any form helper text */
+    .stForm [data-testid="stMarkdownContainer"],
+    .stForm small,
+    .stForm [role="alert"],
+    .stForm div[title*="Press Enter"],
+    .stForm div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stForm"] [data-testid="stMarkdownContainer"],
+    .stForm .stAlert {
         display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        opacity: 0 !important;
     }
 
     /* All other text readable */
@@ -50,7 +59,7 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* Dark mode fallback - dark input with white text */
+    /* Dark mode fallback */
     @media (prefers-color-scheme: dark) {
         .stApp, .main, .block-container, body, html { background-color: #2c2c2c !important; }
         .main .block-container { background-color: #3a3a3a !important; }
@@ -62,7 +71,7 @@ st.markdown("""
         }
     }
 
-    /* Expander styles */
+    /* Expander / result box styles */
     div[data-testid="stExpander"] > div > div > div > div > button { background-color: #f8e8f0 !important; border: 3px solid #D81B60 !important; }
     div[data-testid="stExpander"] div[role="region"] { background-color: #FFCCE0 !important; border-left: 6px solid #D81B60 !important; }
 </style>
@@ -95,9 +104,7 @@ def extract_date_from_path(file_path):
     return datetime.min
 
 def find_fuzzy_match(text, search_word, threshold=82):
-    """Return True + the matched word if a fuzzy match is found."""
-    if not text or not search_word:
-        return False, None
+    if not text or not search_word: return False, None
     search_lower = search_word.lower().strip()
     words = re.findall(r'\b\w+\b', text)
     best_ratio = 0
@@ -107,8 +114,7 @@ def find_fuzzy_match(text, search_word, threshold=82):
         if ratio > best_ratio:
             best_ratio = ratio
             best_word = w
-    if best_ratio >= threshold:
-        return True, best_word
+    if best_ratio >= threshold: return True, best_word
     return False, None
 
 def search_file(file_path, search_word):
@@ -118,16 +124,13 @@ def search_file(file_path, search_word):
             italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
             if italic_text:
                 if " " in search_word:
-                    # Phrase: use exact match
                     if re.search(re.escape(search_word), italic_text, re.IGNORECASE):
                         return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip(), "matched_word": search_word}
                 else:
-                    # Single word: use fuzzy
                     matched, matched_word = find_fuzzy_match(italic_text, search_word)
                     if matched:
                         return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip(), "matched_word": matched_word}
-    except:
-        pass
+    except: pass
     return None
 
 def search_italic_text(search_word, folder_path):
@@ -153,9 +156,9 @@ def search_italic_text(search_word, folder_path):
             status.text(f"Searching: {os.path.basename(future_to_file[future])}")
     return results, file_count, match_count
 
-# FORM so Enter key works cleanly
+# FORM enables Enter key + we hide the hint with CSS above
 with st.form("search_form", clear_on_submit=False):
-    search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith, lovve (typo ok)")
+    search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith (typos ok)")
     submitted = st.form_submit_button("🔍 Search", type="primary")
 
 if submitted:
@@ -175,12 +178,7 @@ if submitted:
             st.subheader("📋 Search Results")
             for res in results:
                 word_to_highlight = res.get("matched_word", search_word)
-                highlighted = re.sub(
-                    rf'(?<!\w){re.escape(word_to_highlight)}(?!\w)',
-                    f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{word_to_highlight}</span>',
-                    res['text'],
-                    flags=re.IGNORECASE
-                )
+                highlighted = re.sub(rf'(?<!\w){re.escape(word_to_highlight)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{word_to_highlight}</span>', res['text'], flags=re.IGNORECASE)
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.92em; line-height: 1.75; background-color: #FFCCE0; padding: 18px; border-radius: 10px; border-left: 6px solid #D81B60; color: #1e1e2e;">{highlighted}</div>""", unsafe_allow_html=True)
             doc = Document()
