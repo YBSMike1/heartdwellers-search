@@ -12,7 +12,7 @@ st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
-DOCX_FOLDER = "Heartdwellers Docxs"   # Hidden path
+DOCX_FOLDER = "Heartdwellers Docxs"
 
 def search_italic_text(search_word, folder_path):
     results = []
