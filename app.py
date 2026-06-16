@@ -14,87 +14,86 @@ import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Light grey page + strong input + FIXED full-size search button
+# Dark purple theme + red/pink accents matching Heart Dwellers website
 st.markdown("""
 <style>
-    /* Light grey page */
-    .stApp, .main, .block-container, body, html { background-color: #f0f0f0 !important; }
-    .main .block-container { background-color: #f8f8f8 !important; border-radius: 12px; padding: 2rem; }
+    /* Dark purple background like the website */
+    .stApp, .main, .block-container, body, html {
+        background-color: #4A0E4E !important;
+    }
+    .main .block-container {
+        background-color: #3D0A40 !important;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
 
-    /* MAXIMUM FORCE: white background + solid black text so you can ALWAYS see what you type */
+    /* Title styling - red/pink accent */
+    h1 {
+        color: #FF4D94 !important;
+        text-shadow: 0 0 12px rgba(255, 77, 148, 0.6);
+    }
+
+    /* Search input - white with dark text, pink border */
     .stTextInput input,
     .stTextInput > div > div > input,
-    .stTextInput > div > input,
-    input[type="text"],
-    .stTextInput textarea,
-    .st-emotion-cache-1g8v9r8 input,
-    div[data-baseweb="input"] input {
+    input[type="text"] {
         color: #000000 !important;
         background-color: #ffffff !important;
-        border: 3px solid #222222 !important;
+        border: 3px solid #D81B60 !important;
+        border-radius: 12px !important;
         font-weight: 700 !important;
         font-size: 1.15em !important;
-    }
-    .stTextInput input::placeholder { color: #555555 !important; }
-
-    /* AGGRESSIVELY HIDE the "Press Enter to submit form" hint */
-    .stForm [data-testid="stMarkdownContainer"],
-    .stForm small,
-    .stForm [role="alert"],
-    .stForm div[title*="Press Enter"],
-    .stForm div[data-testid="stMarkdownContainer"] p,
-    div[data-testid="stForm"] [data-testid="stMarkdownContainer"],
-    .stForm .stAlert {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        opacity: 0 !important;
+        padding: 12px 16px !important;
     }
 
-    /* FIX: Make the Search button FULL SIZE and fully visible again */
-    .stForm button,
-    button[data-testid="stFormSubmitButton"],
-    button[kind="primary"],
-    .stButton > button,
-    button[data-testid="baseButton-primary"] {
-        font-size: 1.05rem !important;
-        padding: 0.65rem 1.6rem !important;
-        min-height: 3.1rem !important;
-        min-width: 170px !important;
-        width: auto !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+    /* Search button - pill style with pink border (matching website buttons) */
+    .stForm button[kind="primary"],
+    button[data-testid="stFormSubmitButton"] {
+        background-color: #D81B60 !important;
+        color: white !important;
+        border: 3px solid #FF9EC1 !important;
+        border-radius: 50px !important;
         font-weight: 700 !important;
-        white-space: nowrap !important;
-        border-radius: 8px !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+        font-size: 1.1rem !important;
+        padding: 0.6rem 2rem !important;
+        min-height: 3.2rem !important;
+        box-shadow: 0 4px 12px rgba(216, 27, 96, 0.5) !important;
+    }
+    .stForm button[kind="primary"]:hover {
+        background-color: #FF4D94 !important;
+        border-color: #ffffff !important;
     }
 
-    /* All other text readable */
-    h1, h2, h3, .stMarkdown, label, .stTextInput label,
-    .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, div[data-testid="stText"] {
-        color: #1e1e2e !important;
-        font-weight: 600 !important;
+    /* Hide form hint */
+    .stForm [data-testid="stMarkdownContainer"],
+    .stForm small, .stForm [role="alert"] {
+        display: none !important;
     }
 
-    /* Dark mode fallback */
-    @media (prefers-color-scheme: dark) {
-        .stApp, .main, .block-container, body, html { background-color: #2c2c2c !important; }
-        .main .block-container { background-color: #3a3a3a !important; }
-        h1, h2, h3, .stMarkdown, label, .stTextInput label, .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, div[data-testid="stText"] { color: #f0f0f0 !important; }
-        .stTextInput input, .stTextInput > div > div > input, input[type="text"] {
-            color: #ffffff !important;
-            background-color: #3a3a3a !important;
-            border: 3px solid #888888 !important;
-        }
+    /* All other text */
+    h2, h3, .stMarkdown, label, .stTextInput label,
+    .stText, .stSpinner, .stProgress label, .stSuccess, .stInfo {
+        color: #f5e6f0 !important;
     }
 
-    /* Expander / result box styles */
-    div[data-testid="stExpander"] > div > div > div > div > button { background-color: #f8e8f0 !important; border: 3px solid #D81B60 !important; }
-    div[data-testid="stExpander"] div[role="region"] { background-color: #FFCCE0 !important; border-left: 6px solid #D81B60 !important; }
+    /* Result boxes - pink theme matching website */
+    div[data-testid="stExpander"] > div > div > div > div > button {
+        background-color: #5C1A60 !important;
+        border: 2px solid #D81B60 !important;
+        border-radius: 12px !important;
+        color: #ffffff !important;
+    }
+    div[data-testid="stExpander"] div[role="region"] {
+        background-color: #3D0A40 !important;
+        border-left: 6px solid #D81B60 !important;
+        border-radius: 0 12px 12px 0 !important;
+    }
+
+    /* Progress bar */
+    .stProgress > div > div > div {
+        background-color: #D81B60 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -207,7 +206,7 @@ def search_italic_text(search_word, folder_path):
 
     return results, file_count, match_count
 
-# FORM so Enter key works + fixed full-size button
+# FORM + styled button
 with st.form("search_form", clear_on_submit=False):
     search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith (typos ok)")
     submitted = st.form_submit_button("🔍 Search", type="primary")
@@ -223,15 +222,18 @@ if submitted:
             definition = get_word_definition(search_word)
             st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+
             if os.path.exists("Newest banner.png"):
                 col1, col2, col3 = st.columns([1,2,1])
                 with col2: st.image("Newest banner.png", width=1240)
+
             st.subheader("📋 Search Results")
             for res in results:
                 word_to_highlight = res.get("matched_word", search_word)
                 highlighted = re.sub(rf'(?<!\w){re.escape(word_to_highlight)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{word_to_highlight}</span>', res['text'], flags=re.IGNORECASE)
                 with st.expander(f"📄 {res['file']}", expanded=True):
-                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.92em; line-height: 1.75; background-color: #FFCCE0; padding: 18px; border-radius: 10px; border-left: 6px solid #D81B60; color: #1e1e2e;">{highlighted}</div>""", unsafe_allow_html=True)
+                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.92em; line-height: 1.75; background-color: #5C1A60; padding: 18px; border-radius: 10px; border-left: 6px solid #D81B60; color: #f5e6f0;">{highlighted}</div>""", unsafe_allow_html=True)
+
             doc = Document()
             for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
             doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
@@ -243,6 +245,7 @@ if submitted:
                 doc.save(tmp.name)
                 with open(tmp.name, "rb") as f:
                     st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {search_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
             if os.path.exists("Bottom banner Std.png"):
                 col1, col2, col3 = st.columns([1,2,1])
                 with col2: st.image("Bottom banner Std.png", width=1240)
