@@ -12,31 +12,41 @@ import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Light targeted CSS (theme handles most colors)
+# Targeted fixes only (theme handles most colors)
 st.markdown("""
 <style>
     /* Search input - clean white with pink border */
     .stTextInput input {
+        background-color: #ffffff !important;
+        color: #000000 !important;
         border: 3px solid #D81B60 !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
     }
 
-    /* Search button - pill style matching website */
-    .stForm button[kind="primary"] {
+    /* ========== SEARCH BUTTON - MAXIMUM FORCE ========== */
+    div[data-testid="stForm"] button[kind="primary"],
+    button[data-testid="stFormSubmitButton"] {
         background-color: #D81B60 !important;
-        color: white !important;
+        color: #ffffff !important;
         border: 4px solid #FF9EC1 !important;
         border-radius: 50px !important;
         font-weight: 800 !important;
-        font-size: 1.15rem !important;
-        padding: 0.7rem 2.4rem !important;
-        min-height: 3.4rem !important;
-        box-shadow: 0 6px 16px rgba(216, 27, 96, 0.5) !important;
+        font-size: 1.2rem !important;
+        padding: 0.75rem 2.5rem !important;
+        min-height: 3.6rem !important;
+        min-width: 200px !important;
+        box-shadow: 0 6px 18px rgba(216, 27, 96, 0.6) !important;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.4) !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
     }
-    .stForm button[kind="primary"]:hover {
+
+    div[data-testid="stForm"] button[kind="primary"]:hover {
         background-color: #FF4D94 !important;
-        border-color: white !important;
+        border-color: #ffffff !important;
     }
 
     /* Hide the "Press Enter to submit form" hint */
@@ -46,12 +56,12 @@ st.markdown("""
 
     /* Result boxes */
     div[data-testid="stExpander"] > div > div > div > div > button {
-        background-color: #5C1A60 !important;
+        background-color: #3D0A40 !important;
         border: 2px solid #D81B60 !important;
-        color: white !important;
+        color: #ffffff !important;
     }
     div[data-testid="stExpander"] div[role="region"] {
-        background-color: #3D0A40 !important;
+        background-color: #2A2A3A !important;
         border-left: 6px solid #D81B60 !important;
     }
 </style>
@@ -191,7 +201,7 @@ if submitted:
                 word_to_highlight = res.get("matched_word", search_word)
                 highlighted = re.sub(rf'(?<!\w){re.escape(word_to_highlight)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{word_to_highlight}</span>', res['text'], flags=re.IGNORECASE)
                 with st.expander(f"📄 {res['file']}", expanded=True):
-                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.92em; line-height: 1.75; background-color: #5C1A60; padding: 18px; border-radius: 10px; border-left: 6px solid #D81B60; color: #f5e6f0;">{highlighted}</div>""", unsafe_allow_html=True)
+                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.92em; line-height: 1.75; background-color: #3D0A40; padding: 18px; border-radius: 10px; border-left: 6px solid #D81B60; color: #f5e6f0;">{highlighted}</div>""", unsafe_allow_html=True)
 
             doc = Document()
             for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
