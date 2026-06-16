@@ -11,7 +11,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Comprehensive styling for light + dark mode
+# Stronger styling for search input visibility
 st.markdown("""
 <style>
     .stApp, .main {
@@ -23,10 +23,14 @@ st.markdown("""
         color: #1e1e2e !important;
     }
     
-    /* Search input box */
-    .stTextInput input {
+    /* Search input box - Force dark text in light mode */
+    .stTextInput input, 
+    .stTextInput textarea,
+    input[type="text"] {
         color: #1e1e2e !important;
+        background-color: #ffffff !important;
     }
+    
     .stTextInput input::placeholder {
         color: #888888 !important;
     }
@@ -42,7 +46,8 @@ st.markdown("""
             background-color: #2c2c2c !important;
         }
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
-        .stTextInput input, .stTextInput input::placeholder,
+        .stTextInput input, .stTextInput textarea,
+        input[type="text"],
         .stText, .stSpinner, .stProgress label, .stEmpty,
         .stSuccess, .stInfo, .stWarning, .stError {
             color: #f0f0f0 !important;
@@ -170,7 +175,7 @@ if st.button("🔍 Search", type="primary"):
             # Sort results by folder date (newest first)
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
 
-            # Top Banner - Large size
+            # Top Banner
             top_banner = "Newest banner.png"
             if os.path.exists(top_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
@@ -224,7 +229,7 @@ if st.button("🔍 Search", type="primary"):
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
 
-            # Bottom Banner - Large size
+            # Bottom Banner
             bottom_banner = "Bottom banner Std.png"
             if os.path.exists(bottom_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
