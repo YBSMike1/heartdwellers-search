@@ -14,7 +14,7 @@ import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Light grey page + strong input styling + HIDE the "Press Enter to submit form" hint
+# Light grey page + strong input styling + FIXED search button + hide hint
 st.markdown("""
 <style>
     /* Light grey page */
@@ -51,6 +51,20 @@ st.markdown("""
         margin: 0 !important;
         padding: 0 !important;
         opacity: 0 !important;
+    }
+
+    /* FIX: Make the Search button normal size and visible again */
+    .stForm button[kind="primary"],
+    button[data-testid="stFormSubmitButton"],
+    .stButton button {
+        font-size: 1rem !important;
+        padding: 0.5rem 1.25rem !important;
+        min-height: 2.6rem !important;
+        min-width: 140px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 600 !important;
     }
 
     /* All other text readable */
@@ -158,7 +172,6 @@ def search_italic_text(search_word, folder_path):
                 match_count += 1
             file_count += 1
 
-            # Calculate live percentage and ETA
             progress = (i + 1) / max(total_files, 1)
             progress_bar.progress(progress)
 
@@ -181,7 +194,6 @@ def search_italic_text(search_word, folder_path):
             percent = int(progress * 100)
             status_text.markdown(f"**Searching** {files_done:,} / {total_files:,} files &nbsp;&nbsp;•&nbsp;&nbsp; **{percent}%** &nbsp;&nbsp;•&nbsp;&nbsp; ~{eta_str} remaining")
 
-    # Final update
     progress_bar.progress(1.0)
     status_text.markdown(f"**Search complete** — {match_count:,} matches found in {file_count:,} files")
     time.sleep(0.6)
@@ -189,7 +201,7 @@ def search_italic_text(search_word, folder_path):
 
     return results, file_count, match_count
 
-# FORM enables Enter key
+# FORM so Enter key works + fixed button
 with st.form("search_form", clear_on_submit=False):
     search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith (typos ok)")
     submitted = st.form_submit_button("🔍 Search", type="primary")
