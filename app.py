@@ -11,11 +11,11 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Medium grey background + stronger searching text visibility
+# Lighter page background (50% lighter)
 st.markdown("""
 <style>
     .stApp, .main, .block-container, body {
-        background-color: #e0e0e0 !important;
+        background-color: #f0f0f0 !important;   /* 50% lighter */
     }
    
     /* Top text */
@@ -40,15 +40,15 @@ st.markdown("""
         color: #555555 !important;
     }
    
-    /* Searching status text - Much stronger visibility */
-    .stText, .stSpinner, .stProgress label, .stEmpty, 
-    div[data-testid="stText"], p, span {
+    /* Status / Searching text */
+    .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, 
+    div[data-testid="stText"] {
         color: #1e1e2e !important;
         font-weight: 600 !important;
         font-size: 1.05em !important;
     }
    
-    /* Dark mode - Bright white searching text */
+    /* Dark mode */
     @media (prefers-color-scheme: dark) {
         .stApp, .main, .block-container, body {
             background-color: #2c2c2c !important;
@@ -56,7 +56,8 @@ st.markdown("""
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
         .stTextInput input, .stTextInput textarea, input[type="text"],
         .stText, .stSpinner, .stProgress label, .stEmpty,
-        div[data-testid="stText"], p, span {
+        .stSuccess, .stInfo, .stWarning, .stError,
+        div[data-testid="stText"] {
             color: #f0f0f0 !important;
         }
     }
