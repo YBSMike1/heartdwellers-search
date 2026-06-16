@@ -11,12 +11,11 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Extremely aggressive light grey background for the entire page and main content box
+# Very light grey for the entire page
 st.markdown("""
 <style>
-    /* Force EVERYTHING light grey */
-    html, body, .stApp, .main, .block-container, [data-testid="stAppViewContainer"], 
-    section.main, .st-emotion-cache-1g8v9r8, .st-emotion-cache-1g8v9r8 > div {
+    /* Force the entire page light grey */
+    html, body, .stApp, .main, .block-container, [data-testid="stAppViewContainer"], section.main {
         background-color: #f0f0f0 !important;
     }
     
@@ -58,7 +57,7 @@ st.markdown("""
         font-size: 1.05em !important;
     }
    
-    /* Dark mode override */
+    /* Dark mode */
     @media (prefers-color-scheme: dark) {
         .stApp, .main, .block-container {
             background-color: #2c2c2c !important;
