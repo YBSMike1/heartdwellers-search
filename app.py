@@ -11,20 +11,20 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Extremely light page background + strong content area
+# Very light grey background for the entire page + content area
 st.markdown("""
 <style>
-    /* Force the entire page to be very light */
-    html, body, .stApp, .main, .block-container, [data-testid="stAppViewContainer"], section.main {
-        background-color: #f8f9fa !important;
+    /* Entire page background - light grey */
+    .stApp, body, .main, .block-container, [data-testid="stAppViewContainer"], section.main {
+        background-color: #f0f0f0 !important;
     }
     
-    /* Main content box - even lighter */
+    /* Main content box - even lighter grey */
     .main .block-container {
-        background-color: #ffffff !important;
+        background-color: #f8f8f8 !important;
         border-radius: 12px;
         padding: 2rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
    
     /* Top text */
@@ -57,9 +57,9 @@ st.markdown("""
         font-size: 1.05em !important;
     }
    
-    /* Dark mode fallback */
+    /* Dark mode */
     @media (prefers-color-scheme: dark) {
-        .stApp, .main, .block-container, body {
+        .stApp, body, .main, .block-container, [data-testid="stAppViewContainer"], section.main {
             background-color: #2c2c2c !important;
         }
         .main .block-container {
