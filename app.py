@@ -11,11 +11,11 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Even lighter page background
+# Much lighter page background
 st.markdown("""
 <style>
     .stApp, .main, .block-container, body {
-        background-color: #f5f5f5 !important;   /* Even lighter */
+        background-color: #f8f8f8 !important;   /* Much lighter */
     }
    
     /* Top text */
