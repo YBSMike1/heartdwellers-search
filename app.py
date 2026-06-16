@@ -7,25 +7,28 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
 import tempfile
 
-st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
+st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Stronger CSS for folder headers (thicker border + lighter background)
+# Center the content like a sheet of paper + nicer styling
 st.markdown("""
 <style>
-    /* Target folder header (expander button) */
-    button[aria-expanded="true"], button[aria-expanded="false"] {
-        background-color: #f8e8f0 !important;
-        border: 4px solid #D81B60 !important;
-        border-radius: 8px !important;
-        padding: 12px 16px !important;
+    /* Limit width to look like a sheet of paper */
+    .main .block-container {
+        max-width: 800px;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
     
-    /* Result text boxes - lighter pink */
-    .stExpander div[role="region"] {
+    /* Folder headers */
+    div[data-testid="stExpander"] > div > div > div > div > button {
+        background-color: #f8e8f0 !important;
+        border: 3px solid #D81B60 !important;
+    }
+    
+    /* Result boxes */
+    div[data-testid="stExpander"] div[role="region"] {
         background-color: #FFCCE0 !important;
         border-left: 6px solid #D81B60 !important;
-        padding: 18px !important;
-        border-radius: 0 0 10px 10px !important;
     }
 </style>
 """, unsafe_allow_html=True)
