@@ -11,48 +11,47 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Very light background + maximum force on search input
+# Medium grey background
 st.markdown("""
 <style>
     .stApp, .main, .block-container, body {
-        background-color: #fafafa !important;
+        background-color: #e0e0e0 !important;   /* Medium grey */
     }
     
-    /* Top text */
+    /* Top text and labels */
     h1, h2, h3, .stMarkdown, label, .stTextInput label {
         color: #1e1e2e !important;
     }
     
-    /* Search input - Maximum force for black text */
-    .stTextInput input,
+    /* Search input box - Solid black text */
+    .stTextInput input, 
     .stTextInput textarea,
     input[type="text"],
     .stTextInput > div > div > input,
-    .stTextInput > div > input,
-    .stTextInput input {
+    .stTextInput > div > input {
         color: #000000 !important;
         background-color: #ffffff !important;
-        border: 3px solid #333333 !important;
-        font-weight: 700 !important;
-        font-size: 1.1em !important;
+        border: 2px solid #333333 !important;
+        font-weight: 600 !important;
     }
     
     .stTextInput input::placeholder {
         color: #555555 !important;
     }
     
-    /* Status text */
+    /* All status and result text */
     .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError {
         color: #1e1e2e !important;
     }
     
-    /* Dark mode */
+    /* Dark mode support */
     @media (prefers-color-scheme: dark) {
         .stApp, .main, .block-container, body {
             background-color: #2c2c2c !important;
         }
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
-        .stTextInput input, .stTextInput textarea, input[type="text"],
+        .stTextInput input, .stTextInput textarea,
+        input[type="text"], .stTextInput > div > div > input,
         .stText, .stSpinner, .stProgress label, .stEmpty,
         .stSuccess, .stInfo, .stWarning, .stError {
             color: #f0f0f0 !important;
@@ -100,8 +99,8 @@ def get_word_definition(word):
             return "Word not found in dictionary."
         else:
             return f"API error (Status: {response.status_code})"
-    except:
-        return "Definition not available at this time."
+    except Exception as e:
+        return "Definition not available at this time. (API temporarily unavailable)"
 
 def extract_date_from_path(file_path):
     try:
@@ -208,7 +207,6 @@ if st.button("🔍 Search", type="primary"):
                     </div>
                     """, unsafe_allow_html=True)
 
-            # Download
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -235,7 +233,7 @@ if st.button("🔍 Search", type="primary"):
             if os.path.exists(bottom_banner):
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.image(bottom_banner, width=2280)
+                    st.image(bottom_banner, width=1240)
         else:
             st.info("No matches found.")
 
