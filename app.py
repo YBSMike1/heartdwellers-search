@@ -14,7 +14,7 @@ import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Light grey page + strong input styling + FIXED search button + hide hint
+# Light grey page + strong input + FIXED full-size search button
 st.markdown("""
 <style>
     /* Light grey page */
@@ -53,18 +53,24 @@ st.markdown("""
         opacity: 0 !important;
     }
 
-    /* FIX: Make the Search button normal size and visible again */
-    .stForm button[kind="primary"],
+    /* FIX: Make the Search button FULL SIZE and fully visible again */
+    .stForm button,
     button[data-testid="stFormSubmitButton"],
-    .stButton button {
-        font-size: 1rem !important;
-        padding: 0.5rem 1.25rem !important;
-        min-height: 2.6rem !important;
-        min-width: 140px !important;
+    button[kind="primary"],
+    .stButton > button,
+    button[data-testid="baseButton-primary"] {
+        font-size: 1.05rem !important;
+        padding: 0.65rem 1.6rem !important;
+        min-height: 3.1rem !important;
+        min-width: 170px !important;
+        width: auto !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
     }
 
     /* All other text readable */
@@ -201,7 +207,7 @@ def search_italic_text(search_word, folder_path):
 
     return results, file_count, match_count
 
-# FORM so Enter key works + fixed button
+# FORM so Enter key works + fixed full-size button
 with st.form("search_form", clear_on_submit=False):
     search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith (typos ok)")
     submitted = st.form_submit_button("🔍 Search", type="primary")
