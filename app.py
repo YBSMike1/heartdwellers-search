@@ -12,19 +12,44 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
+# Light grey page + MAXIMUM FORCE black text in search box
 st.markdown("""
 <style>
-    .stApp, .main, .block-container, body { background-color: #f0f0f0 !important; }
+    /* Light grey page */
+    .stApp, .main, .block-container, body, html { background-color: #f0f0f0 !important; }
     .main .block-container { background-color: #f8f8f8 !important; border-radius: 12px; padding: 2rem; }
-    h1, h2, h3, .stMarkdown, label, .stTextInput label { color: #1e1e2e !important; }
-    .stTextInput input { color: #000000 !important; background-color: #ffffff !important; border: 3px solid #333333 !important; font-weight: 700 !important; font-size: 1.1em !important; }
-    .stTextInput input::placeholder { color: #555555 !important; }
-    .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, div[data-testid="stText"] { color: #1e1e2e !important; font-weight: 600 !important; font-size: 1.05em !important; }
-    @media (prefers-color-scheme: dark) {
-        .stApp, .main, .block-container, body { background-color: #2c2c2c !important; }
-        .main .block-container { background-color: #3a3a3a !important; }
-        h1, h2, h3, .stMarkdown, label, .stTextInput label, .stTextInput input, .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, div[data-testid="stText"] { color: #f0f0f0 !important; }
+
+    /* MAXIMUM FORCE on search input - you will see what you type */
+    .stTextInput input,
+    .stTextInput > div > div > input,
+    .stTextInput > div > input,
+    input[type="text"],
+    .stTextInput textarea,
+    .st-emotion-cache-1g8v9r8 input {
+        color: #000000 !important;
+        background-color: #ffffff !important;
+        border: 3px solid #222222 !important;
+        font-weight: 700 !important;
+        font-size: 1.15em !important;
     }
+    .stTextInput input::placeholder { color: #444444 !important; }
+
+    /* All other text readable */
+    h1, h2, h3, .stMarkdown, label, .stTextInput label,
+    .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, div[data-testid="stText"] {
+        color: #1e1e2e !important;
+        font-weight: 600 !important;
+    }
+
+    /* Dark mode fallback */
+    @media (prefers-color-scheme: dark) {
+        .stApp, .main, .block-container, body, html { background-color: #2c2c2c !important; }
+        .main .block-container { background-color: #3a3a3a !important; }
+        h1, h2, h3, .stMarkdown, label, .stTextInput label, .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, div[data-testid="stText"] { color: #f0f0f0 !important; }
+        .stTextInput input, .stTextInput > div > div > input, input[type="text"] { color: #ffffff !important; background-color: #444444 !important; }
+    }
+
+    /* Expander styles */
     div[data-testid="stExpander"] > div > div > div > div > button { background-color: #f8e8f0 !important; border: 3px solid #D81B60 !important; }
     div[data-testid="stExpander"] div[role="region"] { background-color: #FFCCE0 !important; border-left: 6px solid #D81B60 !important; }
 </style>
@@ -111,7 +136,6 @@ if st.button("🔍 Search", type="primary"):
                 highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.92em; line-height: 1.75; background-color: #FFCCE0; padding: 18px; border-radius: 10px; border-left: 6px solid #D81B60; color: #1e1e2e;">{highlighted}</div>""", unsafe_allow_html=True)
-            # Download report
             doc = Document()
             for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
             doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
