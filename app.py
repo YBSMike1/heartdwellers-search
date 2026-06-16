@@ -9,23 +9,22 @@ import tempfile
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Center the content like a sheet of paper + nicer styling
+# Light grey page background + other styling
 st.markdown("""
 <style>
-    /* Limit width to look like a sheet of paper */
-    .main .block-container {
-        max-width: 800px;
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+    /* Light grey page background */
+    .stApp {
+        background-color: #f5f5f5 !important;
     }
     
-    /* Folder headers */
+    /* Folder headers - light pink with thicker border */
     div[data-testid="stExpander"] > div > div > div > div > button {
         background-color: #f8e8f0 !important;
         border: 3px solid #D81B60 !important;
+        border-radius: 8px 8px 0 0 !important;
     }
     
-    /* Result boxes */
+    /* Result boxes - soft pink */
     div[data-testid="stExpander"] div[role="region"] {
         background-color: #FFCCE0 !important;
         border-left: 6px solid #D81B60 !important;
