@@ -11,7 +11,7 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Medium grey background + stronger status text visibility
+# Medium grey background + stronger searching text visibility
 st.markdown("""
 <style>
     .stApp, .main, .block-container, body {
@@ -40,15 +40,15 @@ st.markdown("""
         color: #555555 !important;
     }
    
-    /* Status / Searching text - Extra strong for dark mode */
-    .stText, .stSpinner, .stProgress label, .stEmpty, .stSuccess, .stInfo, .stWarning, .stError, 
-    div[data-testid="stText"] {
+    /* Searching status text - Much stronger visibility */
+    .stText, .stSpinner, .stProgress label, .stEmpty, 
+    div[data-testid="stText"], p, span {
         color: #1e1e2e !important;
         font-weight: 600 !important;
         font-size: 1.05em !important;
     }
    
-    /* Dark mode */
+    /* Dark mode - Bright white searching text */
     @media (prefers-color-scheme: dark) {
         .stApp, .main, .block-container, body {
             background-color: #2c2c2c !important;
@@ -56,8 +56,7 @@ st.markdown("""
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
         .stTextInput input, .stTextInput textarea, input[type="text"],
         .stText, .stSpinner, .stProgress label, .stEmpty,
-        .stSuccess, .stInfo, .stWarning, .stError,
-        div[data-testid="stText"] {
+        div[data-testid="stText"], p, span {
             color: #f0f0f0 !important;
         }
     }
