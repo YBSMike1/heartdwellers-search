@@ -14,12 +14,12 @@ st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 # Very light grey for the entire page and main content box
 st.markdown("""
 <style>
-    /* Force the entire page and all containers to light grey */
+    /* Force the entire page light grey */
     html, body, .stApp, .main, .block-container, [data-testid="stAppViewContainer"], section.main, .st-emotion-cache-1g8v9r8, .st-emotion-cache-1g8v9r8 > div {
         background-color: #f0f0f0 !important;
     }
     
-    /* Main content box - clean very light grey */
+    /* Main content box - clean light grey */
     .main .block-container, section.main > div, .st-emotion-cache-1g8v9r8, .st-emotion-cache-1g8v9r8 > div {
         background-color: #f8f8f8 !important;
         border-radius: 12px;
