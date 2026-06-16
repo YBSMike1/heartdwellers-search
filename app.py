@@ -11,11 +11,11 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Lighter background + very strong search box visibility
+# Lighter background + very aggressive search box styling
 st.markdown("""
 <style>
-    .stApp, .main {
-        background-color: #f8f8f8 !important;   /* Lighter grey */
+    .stApp, .main, .block-container {
+        background-color: #f8f8f8 !important;   /* Much lighter */
     }
     
     /* Top text and labels */
@@ -32,7 +32,7 @@ st.markdown("""
         color: #000000 !important;
         background-color: #ffffff !important;
         border: 2px solid #333333 !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
     
     .stTextInput input::placeholder {
@@ -46,7 +46,7 @@ st.markdown("""
     
     /* Dark mode support */
     @media (prefers-color-scheme: dark) {
-        .stApp, .main {
+        .stApp, .main, .block-container {
             background-color: #2c2c2c !important;
         }
         h1, h2, h3, .stMarkdown, label, .stTextInput label,
