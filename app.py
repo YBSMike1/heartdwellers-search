@@ -9,7 +9,7 @@ import tempfile
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="wide")
 
-# Custom CSS - Thicker outline + Lighter pink
+# Strong CSS for folder headers (thicker outline) and lighter result boxes
 st.markdown("""
 <style>
     /* Thicker outline for folder headers */
@@ -19,9 +19,9 @@ st.markdown("""
         border-radius: 8px 8px 0 0 !important;
     }
     
-    /* Lighter pink for result boxes */
-    .stExpander div[role="region"] {
-        background-color: #FFCCE0 !important;   /* 50% lighter pink */
+    /* Lighter pink for result text boxes */
+    div[data-testid="stExpander"] div[role="region"] {
+        background-color: #FFCCE0 !important;
         border-left: 6px solid #D81B60 !important;
     }
 </style>
