@@ -3,8 +3,6 @@ import re
 import streamlit as st
 from docx import Document
 from docx.shared import Pt, Inches
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.oxml import parse_xml
 import tempfile
 import requests
 from datetime import datetime
@@ -14,102 +12,47 @@ import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Dark purple theme + VERY STRONG button fix
+# Light targeted CSS (theme handles most colors)
 st.markdown("""
 <style>
-    /* Dark purple background */
-    .stApp, .main, .block-container, body, html {
-        background-color: #4A0E4E !important;
-    }
-    .main .block-container {
-        background-color: #3D0A40 !important;
-        border-radius: 16px;
-        padding: 2rem;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.45);
-    }
-
-    /* Title */
-    h1 {
-        color: #FF4D94 !important;
-        text-shadow: 0 0 14px rgba(255, 77, 148, 0.7);
-    }
-
-    /* Search input - white with pink border */
-    .stTextInput input,
-    .stTextInput > div > div > input,
-    input[type="text"] {
-        color: #000000 !important;
-        background-color: #ffffff !important;
+    /* Search input - clean white with pink border */
+    .stTextInput input {
         border: 3px solid #D81B60 !important;
         border-radius: 12px !important;
         font-weight: 700 !important;
-        font-size: 1.15em !important;
-        padding: 12px 16px !important;
     }
 
-    /* ========== SEARCH BUTTON - MAXIMUM FORCE ========== */
-    div[data-testid="stForm"] button[kind="primary"],
-    button[data-testid="stFormSubmitButton"],
-    .stForm button,
-    button[data-testid="baseButton-primary"],
-    .stButton button[kind="primary"] {
+    /* Search button - pill style matching website */
+    .stForm button[kind="primary"] {
         background-color: #D81B60 !important;
-        color: #ffffff !important;
+        color: white !important;
         border: 4px solid #FF9EC1 !important;
         border-radius: 50px !important;
         font-weight: 800 !important;
-        font-size: 1.2rem !important;
-        padding: 0.8rem 2.6rem !important;
-        min-height: 3.6rem !important;
-        min-width: 200px !important;
-        width: auto !important;
-        box-shadow: 0 6px 18px rgba(216, 27, 96, 0.65) !important;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.4) !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        white-space: nowrap !important;
-        line-height: 1.2 !important;
+        font-size: 1.15rem !important;
+        padding: 0.7rem 2.4rem !important;
+        min-height: 3.4rem !important;
+        box-shadow: 0 6px 16px rgba(216, 27, 96, 0.5) !important;
     }
-
-    div[data-testid="stForm"] button[kind="primary"]:hover,
-    button[data-testid="stFormSubmitButton"]:hover {
+    .stForm button[kind="primary"]:hover {
         background-color: #FF4D94 !important;
-        border-color: #ffffff !important;
+        border-color: white !important;
     }
 
-    /* Hide "Press Enter to submit form" hint */
-    .stForm [data-testid="stMarkdownContainer"],
-    .stForm small, .stForm [role="alert"] {
+    /* Hide the "Press Enter to submit form" hint */
+    .stForm [data-testid="stMarkdownContainer"] {
         display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        opacity: 0 !important;
-    }
-
-    /* All other text */
-    h2, h3, .stMarkdown, label, .stTextInput label,
-    .stText, .stSpinner, .stProgress label, .stSuccess, .stInfo {
-        color: #f5e6f0 !important;
     }
 
     /* Result boxes */
     div[data-testid="stExpander"] > div > div > div > div > button {
         background-color: #5C1A60 !important;
         border: 2px solid #D81B60 !important;
-        border-radius: 12px !important;
-        color: #ffffff !important;
+        color: white !important;
     }
     div[data-testid="stExpander"] div[role="region"] {
         background-color: #3D0A40 !important;
         border-left: 6px solid #D81B60 !important;
-        border-radius: 0 12px 12px 0 !important;
-    }
-
-    .stProgress > div > div > div {
-        background-color: #D81B60 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -214,7 +157,7 @@ def search_italic_text(search_word, folder_path):
                 eta_str = "calculating..."
 
             percent = int(progress * 100)
-            status_text.markdown(f"**Searching** {files_done:,} / {total_files:,} files &nbsp;&nbsp;•&nbsp;&nbsp; **{percent}%** &nbsp;&nbsp;•&nbsp;&nbsp; ~{eta_str} remaining")
+            status_text.markdown(f"**Searching** {files_done:,} / {total_files:,} files • **{percent}%** • ~{eta_str} remaining")
 
     progress_bar.progress(1.0)
     status_text.markdown(f"**Search complete** — {match_count:,} matches found in {file_count:,} files")
@@ -223,7 +166,6 @@ def search_italic_text(search_word, folder_path):
 
     return results, file_count, match_count
 
-# FORM + button
 with st.form("search_form", clear_on_submit=False):
     search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith (typos ok)")
     submitted = st.form_submit_button("🔍 Search", type="primary")
