@@ -7,7 +7,6 @@ import tempfile
 import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from rapidfuzz import fuzz
 import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
@@ -84,7 +83,7 @@ st.markdown("""
 # ============ CONFIG ============
 DOCX_FOLDER = "Heartdwellers Docxs"
 
-# ============ FUNCTIONS ============
+# ============ FUNCTIONS (Exact Match Only) ============
 
 def get_word_definition(word):
     if not word or len(word) < 2:
@@ -110,35 +109,15 @@ def extract_date_from_path(file_path):
         pass
     return datetime.min
 
-def find_fuzzy_match(text, search_word, threshold=82):
-    if not text or not search_word:
-        return False, None
-    search_lower = search_word.lower().strip()
-    words = re.findall(r'\b\w+\b', text)
-    best_ratio = 0
-    best_word = None
-    for w in words:
-        ratio = fuzz.ratio(w.lower(), search_lower)
-        if ratio > best_ratio:
-            best_ratio = ratio
-            best_word = w
-    if best_ratio >= threshold:
-        return True, best_word
-    return False, None
-
 def search_file(file_path, search_word):
+    """Exact whole-word match only (no fuzzy)"""
     try:
         doc = Document(file_path)
+        pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
         for p in doc.paragraphs:
             italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
-            if italic_text:
-                if " " in search_word:
-                    if re.search(re.escape(search_word), italic_text, re.IGNORECASE):
-                        return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip(), "matched_word": search_word}
-                else:
-                    matched, matched_word = find_fuzzy_match(italic_text, search_word)
-                    if matched:
-                        return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip(), "matched_word": matched_word}
+            if italic_text and pattern.search(italic_text):
+                return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip()}
     except:
         pass
     return None
@@ -204,9 +183,9 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 
 # === TOP BANNER (Before search) ===
 if os.path.exists("Newest banner.png"):
-    col1, col2, col3 = st.columns([0.2, 3.6, 0.2])
+    col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
     with col2:
-        st.image("Newest banner.png", width=3200)
+        st.image("Newest banner.png", width=3400)
 
 st.markdown("### Enter a word or phrase")
 
@@ -230,8 +209,12 @@ if search_clicked:
 
             st.subheader("📋 Search Results")
             for res in results:
-                word_to_highlight = res.get("matched_word", search_word)
-                highlighted = re.sub(rf'(?<!\w){re.escape(word_to_highlight)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{word_to_highlight}</span>', res['text'], flags=re.IGNORECASE)
+                highlighted = re.sub(
+                    rf'(?<!\w){re.escape(search_word)}(?!\w)',
+                    f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>',
+                    res['text'],
+                    flags=re.IGNORECASE
+                )
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
 
@@ -251,9 +234,9 @@ if search_clicked:
 
             # === BOTTOM BANNER (After results) ===
             if os.path.exists("Bottom banner Std.png"):
-                col1, col2, col3 = st.columns([0.2, 3.6, 0.2])
+                col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
                 with col2:
-                    st.image("Bottom banner Std.png", width=3200)
+                    st.image("Bottom banner Std.png", width=3400)
         else:
             st.info("No matches found.")
 
