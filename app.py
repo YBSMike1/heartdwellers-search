@@ -11,15 +11,15 @@ from datetime import datetime
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# Very light grey background for the entire page + content area
+# Force consistent light grey background for the entire page
 st.markdown("""
 <style>
-    /* Entire page background - light grey */
-    .stApp, body, .main, .block-container, [data-testid="stAppViewContainer"], section.main {
+    /* Force the entire page to light grey */
+    html, body, .stApp, .main, .block-container, [data-testid="stAppViewContainer"], section.main, .st-emotion-cache-1g8v9r8 {
         background-color: #f0f0f0 !important;
     }
     
-    /* Main content box - even lighter grey */
+    /* Main content box - clean light grey */
     .main .block-container {
         background-color: #f8f8f8 !important;
         border-radius: 12px;
@@ -57,20 +57,13 @@ st.markdown("""
         font-size: 1.05em !important;
     }
    
-    /* Dark mode */
+    /* Dark mode override */
     @media (prefers-color-scheme: dark) {
-        .stApp, body, .main, .block-container, [data-testid="stAppViewContainer"], section.main {
+        .stApp, .main, .block-container {
             background-color: #2c2c2c !important;
         }
         .main .block-container {
             background-color: #3a3a3a !important;
-        }
-        h1, h2, h3, .stMarkdown, label, .stTextInput label,
-        .stTextInput input, .stTextInput textarea, input[type="text"],
-        .stText, .stSpinner, .stProgress label, .stEmpty,
-        .stSuccess, .stInfo, .stWarning, .stError,
-        div[data-testid="stText"] {
-            color: #f0f0f0 !important;
         }
     }
    
