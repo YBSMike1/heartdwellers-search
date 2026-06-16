@@ -10,6 +10,7 @@ import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from rapidfuzz import fuzz
+import time
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
@@ -36,7 +37,7 @@ st.markdown("""
     }
     .stTextInput input::placeholder { color: #555555 !important; }
 
-    /* AGGRESSIVELY HIDE the "Press Enter to submit form" hint and any form helper text */
+    /* AGGRESSIVELY HIDE the "Press Enter to submit form" hint */
     .stForm [data-testid="stMarkdownContainer"],
     .stForm small,
     .stForm [role="alert"],
@@ -140,10 +141,14 @@ def search_italic_text(search_word, folder_path):
     if not os.path.exists(folder_path):
         st.error(f"Folder not found: {folder_path}")
         return [], 0, 0
+
     progress_bar = st.progress(0)
-    status = st.empty()
+    status_text = st.empty()
+    start_time = time.time()
+
     all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
     total_files = len(all_files)
+
     with ThreadPoolExecutor(max_workers=12) as executor:
         future_to_file = {executor.submit(search_file, f, search_word): f for f in all_files}
         for i, future in enumerate(as_completed(future_to_file)):
@@ -152,11 +157,39 @@ def search_italic_text(search_word, folder_path):
                 results.append(result)
                 match_count += 1
             file_count += 1
-            progress_bar.progress(min((i+1)/max(total_files,1), 1.0))
-            status.text(f"Searching: {os.path.basename(future_to_file[future])}")
+
+            # Calculate live percentage and ETA
+            progress = (i + 1) / max(total_files, 1)
+            progress_bar.progress(progress)
+
+            elapsed = time.time() - start_time
+            files_done = i + 1
+            files_remaining = total_files - files_done
+
+            if files_done > 0 and files_remaining > 0:
+                avg_time = elapsed / files_done
+                eta_seconds = avg_time * files_remaining
+                if eta_seconds < 60:
+                    eta_str = f"{int(eta_seconds)}s"
+                else:
+                    m = int(eta_seconds // 60)
+                    s = int(eta_seconds % 60)
+                    eta_str = f"{m}m {s}s"
+            else:
+                eta_str = "calculating..."
+
+            percent = int(progress * 100)
+            status_text.markdown(f"**Searching** {files_done:,} / {total_files:,} files &nbsp;&nbsp;•&nbsp;&nbsp; **{percent}%** &nbsp;&nbsp;•&nbsp;&nbsp; ~{eta_str} remaining")
+
+    # Final update
+    progress_bar.progress(1.0)
+    status_text.markdown(f"**Search complete** — {match_count:,} matches found in {file_count:,} files")
+    time.sleep(0.6)
+    status_text.empty()
+
     return results, file_count, match_count
 
-# FORM enables Enter key + we hide the hint with CSS above
+# FORM enables Enter key
 with st.form("search_form", clear_on_submit=False):
     search_word = st.text_input("Enter the word or phrase to search:", placeholder="e.g. rapture, love, faith (typos ok)")
     submitted = st.form_submit_button("🔍 Search", type="primary")
@@ -168,7 +201,7 @@ if submitted:
         with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
         if results:
-            st.success(f"✅ Found {match_count} matches in {file_count} files.")
+            st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             definition = get_word_definition(search_word)
             st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
