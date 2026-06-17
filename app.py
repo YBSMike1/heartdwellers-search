@@ -9,7 +9,6 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 from spellchecker import SpellChecker
-import threading
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
@@ -51,18 +50,6 @@ st.markdown("""
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
-# ============ SESSION STATE ============
-if "search_in_progress" not in st.session_state:
-    st.session_state.search_in_progress = False
-if "search_results" not in st.session_state:
-    st.session_state.search_results = None
-if "search_word" not in st.session_state:
-    st.session_state.search_word = ""
-if "search_file_count" not in st.session_state:
-    st.session_state.search_file_count = 0
-if "search_match_count" not in st.session_state:
-    st.session_state.search_match_count = 0
-
 def get_word_definition(word):
     if not word or len(word) < 2: return "Please enter a valid word."
     try:
@@ -95,20 +82,21 @@ def search_file(file_path, search_word):
     except: pass
     return None
 
-def run_search_in_background(search_word):
-    """This runs in a background thread"""
-    st.session_state.search_in_progress = True
-    st.session_state.search_word = search_word
-    st.session_state.search_results = []
-    st.session_state.search_file_count = 0
-    st.session_state.search_match_count = 0
-
-    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER)
-                 for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
-
-    total_files = len(all_files)
+def search_italic_text(search_word, folder_path):
     results = []
+    file_count = 0
     match_count = 0
+    if not os.path.exists(folder_path):
+        st.error(f"Folder not found: {folder_path}")
+        return [], 0, 0
+
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    start_time = time.time()
+
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path)
+                 for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+    total_files = len(all_files)
 
     with ThreadPoolExecutor(max_workers=12) as executor:
         future_to_file = {executor.submit(search_file, f, search_word): f for f in all_files}
@@ -117,16 +105,22 @@ def run_search_in_background(search_word):
             if result:
                 results.append(result)
                 match_count += 1
+            file_count += 1
+            progress = (i + 1) / max(total_files, 1)
+            progress_bar.progress(progress)
+            elapsed = time.time() - start_time
+            files_done = i + 1
+            files_remaining = total_files - files_done
+            if files_done > 0 and files_remaining > 0:
+                eta_str = f"~{int((elapsed / files_done) * files_remaining)}s"
+            else:
+                eta_str = "calculating..."
+            percent = int(progress * 100)
+            status_text.markdown(f"**Searching** {files_done:,} / {total_files:,} files • **{percent}%** • {eta_str} remaining")
 
-            st.session_state.search_file_count = i + 1
-            st.session_state.search_match_count = match_count
-            st.session_state.search_results = results.copy()
-
-    # Finished
-    st.session_state.search_in_progress = False
-    st.session_state.search_results = results
-    st.session_state.search_match_count = match_count
-    st.session_state.search_file_count = total_files
+    progress_bar.progress(1.0)
+    status_text.empty()
+    return results, file_count, match_count
 
 # ============ UI ============
 st.title("❤️ Heartdwellers Search Tool")
@@ -145,86 +139,63 @@ with col1:
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-# ============ START SEARCH ============
-if search_clicked and search_word:
-    # Clear previous state
-    st.session_state.search_in_progress = True
-    st.session_state.search_results = None
-    st.session_state.search_word = search_word
-    st.session_state.search_file_count = 0
-    st.session_state.search_match_count = 0
-
-    # Start background thread
-    thread = threading.Thread(target=run_search_in_background, args=(search_word,), daemon=True)
-    thread.start()
-
-    # Small delay then rerun so the progress UI appears
-    time.sleep(0.4)
-    st.rerun()
-
-# ============ SHOW PROGRESS WHILE SEARCHING ============
-if st.session_state.search_in_progress:
-    st.info(f"🔍 Searching for **'{st.session_state.search_word}'** ...")
-
-    progress_value = st.session_state.search_file_count / max(st.session_state.search_file_count or 1, 1)
-    st.progress(progress_value)
-
-    st.markdown(f"""
-    **Files processed:** {st.session_state.search_file_count:,}  
-    **Matches found so far:** {st.session_state.search_match_count:,}
-    """)
-
-    time.sleep(0.7)
-    st.rerun()
-
-# ============ SHOW RESULTS ============
-elif st.session_state.search_results is not None:
-    results = st.session_state.search_results
-    search_word = st.session_state.search_word
-    file_count = st.session_state.search_file_count
-    match_count = st.session_state.search_match_count
-
-    if results:
-        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-        definition = get_word_definition(search_word)
-        st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
-
-        # DOWNLOAD BUTTON AT TOP
-        doc = Document()
-        for section in doc.sections:
-            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-        doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
-        for res in results:
-            doc.add_paragraph(res["file"], style='Heading 3')
-            p = doc.add_paragraph(res["text"])
-            for run in p.runs: run.italic = True
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-            doc.save(tmp.name)
-            with open(tmp.name, "rb") as f:
-                st.download_button(
-                    label="📥 Download Full Report (Word Document)",
-                    data=f,
-                    file_name=f"Jesus speaks about {search_word}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
-
-        # Results
-        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-        st.subheader("📋 Search Results")
-
-        for res in results:
-            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', 
-                                 f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
-                                 res['text'], flags=re.IGNORECASE)
-            with st.expander(f"📄 {res['file']}", expanded=True):
-                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
-
-        if os.path.exists("Bottom banner Std.png"):
-            col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
-            with col2:
-                st.image("Bottom banner Std.png", width=3400)
+if search_clicked:
+    if not search_word:
+        st.warning("Please enter a word or phrase.")
     else:
-        st.info("No matches found.")
+        with st.spinner("Searching messages..."):
+            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+
+        if results:
+            st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+            definition = get_word_definition(search_word)
+            st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
+
+            # ========== DOWNLOAD BUTTON AT THE TOP ==========
+            doc = Document()
+            for section in doc.sections:
+                section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+            doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+            for res in results:
+                doc.add_paragraph(res["file"], style='Heading 3')
+                p = doc.add_paragraph(res["text"])
+                for run in p.runs: run.italic = True
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+                doc.save(tmp.name)
+                with open(tmp.name, "rb") as f:
+                    st.download_button(
+                        label="📥 Download Full Report (Word Document)",
+                        data=f,
+                        file_name=f"Jesus speaks about {search_word}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+
+            # Results
+            results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+            st.subheader("📋 Search Results")
+
+            for res in results:
+                highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', 
+                                     f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
+                                     res['text'], flags=re.IGNORECASE)
+                with st.expander(f"📄 {res['file']}", expanded=True):
+                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
+
+            if os.path.exists("Bottom banner Std.png"):
+                col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
+                with col2:
+                    st.image("Bottom banner Std.png", width=3400)
+        else:
+            corrected = spell.correction(search_word.lower())
+            if corrected and corrected != search_word.lower():
+                st.warning(f"No matches found for **'{search_word}'**.")
+                if st.button(f"🔍 Search for “{corrected}” instead", type="primary"):
+                    with st.spinner("Searching messages..."):
+                        results, file_count, match_count = search_italic_text(corrected, DOCX_FOLDER)
+                    if results:
+                        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+            else:
+                st.info("No matches found.")
 
 st.caption("Heartdwellers Search Tool — Built for the community")
