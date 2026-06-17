@@ -259,7 +259,7 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ NEW: DATAFRAME TABLE + SELECTBOX ============
+# ============ DATAFRAME TABLE + SELECTBOX ============
 st.markdown("---")
 st.header("📖 Browse Sins Alphabetically")
 
@@ -268,23 +268,31 @@ st.markdown("Select a sin word below to search it instantly.")
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
 
-# Create DataFrame
+# Build DataFrame
 df_data = []
-max_freq = max(sin_frequencies.values()) if sin_frequencies else 1
+max_freq = max(sin_frequencies.values()) if sin_frequencies else 438
 
 for sin in sorted_sins:
     freq = sin_frequencies.get(sin, 0)
-    percentage = round((freq / max_freq) * 100, 2) if max_freq > 0 else 0
     df_data.append({
         "Sin Word": sin,
-        "Frequency": freq,
-        "% of Mentions": percentage
+        "Frequency": freq
     })
 
 df = pd.DataFrame(df_data)
 
-# Show the table
-st.dataframe(df, use_container_width=True, hide_index=True)
+# Progress bar column (see-through style)
+column_config = {
+    "Frequency": st.column_config.ProgressColumn(
+        "Frequency",
+        help="How often this sin appears in the messages (0 to max)",
+        min_value=0,
+        max_value=max_freq,
+        format="%d",
+    )
+}
+
+st.dataframe(df, column_config=column_config, use_container_width=True, hide_index=True)
 
 # Selectbox
 selected_sin = st.selectbox(
