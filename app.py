@@ -245,7 +245,6 @@ if os.path.exists("Newest banner.png"):
 
 st.markdown("### Enter a word or phrase")
 
-# Always define these at the top level
 search_word = st.text_input(
     "Search term",
     value=st.session_state.get("search_word", ""),
@@ -257,17 +256,13 @@ col1, col2 = st.columns([4, 1.2])
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-# === SEARCH TRIGGER ===
-run_search = search_clicked or st.session_state.get("auto_search", False)
-
-if run_search:
+if search_clicked or st.session_state.get("auto_search", False):
     if not search_word:
         st.warning("Please enter a word or phrase.")
     else:
         with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
         
-        # Clear the auto-search flag
         if "auto_search" in st.session_state:
             del st.session_state["auto_search"]
         
@@ -307,39 +302,50 @@ if run_search:
 st.markdown("---")
 st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
-st.markdown("""
-This section shows how often **biblical sin-related words** appear in Jesus’ direct words (italic text).  
-**Click any numbered word below** to automatically search for it.
-""")
+st.markdown("Click any sin word below to search it instantly.")
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
     with st.spinner("Scanning all messages for sin-related words..."):
         sin_data = build_sin_word_analysis()
-        st.success(f"Sin word analysis updated on {sin_data['built_on']}")
+        st.success(f"✅ Updated on {sin_data['built_on']}")
 
 sin_data = load_sin_word_analysis()
 
 if sin_data:
-    st.success(f"**Last updated:** {sin_data['built_on']}")
-    st.write(f"**Total messages searched:** {sin_data.get('total_messages_scanned', 0):,}")
-    st.write(f"**Unique sin-related words found:** {sin_data['total_unique_sin_words_found']}")
-    st.write(f"**Total occurrences:** {sin_data['total_sin_occurrences']:,}")
+    st.success(f"**Last updated:** {sin_data['built_on']} • **Messages scanned:** {sin_data.get('total_messages_scanned', 0):,}")
+    st.write(f"**Unique sin words found:** {sin_data['total_unique_sin_words_found']} • **Total occurrences:** {sin_data['total_sin_occurrences']:,}")
 
-    # === NUMBERED CLICKABLE SIN WORDS ===
-    if sin_data['sin_words']:
-        st.markdown("**Click a word to search:**")
+    tab1, tab2 = st.tabs(["🔥 Ranked by Frequency", "🔤 Alphabetical"])
+
+    with tab1:
         cols = st.columns(6)
         for i, item in enumerate(sin_data['sin_words'][:30]):
             with cols[i % 6]:
+                intensity = min(255, 100 + item['Frequency'] * 4)
+                color = f"rgba({intensity}, 69, 122, 0.9)"
                 button_label = f"{item['Rank']}. {item['Sin Word']}"
-                if st.button(button_label, key=f"sin_{i}"):
+                if st.button(button_label, key=f"rank_{i}"):
                     st.session_state['search_word'] = item['Sin Word']
                     st.session_state['auto_search'] = True
                     st.rerun()
 
-    import pandas as pd
-    df = pd.DataFrame(sin_data['sin_words'])
-    st.dataframe(df, use_container_width=True, hide_index=True)
+        import pandas as pd
+        df = pd.DataFrame(sin_data['sin_words'])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+    with tab2:
+        st.markdown("**Click any word below**")
+        alpha_cols = st.columns(5)
+        sorted_words = sorted(sin_data['sin_words'], key=lambda x: x['Sin Word'])
+        for i, item in enumerate(sorted_words[:40]):  # Top 40 for easy scanning
+            with alpha_cols[i % 5]:
+                # Color coding: deeper rose = more frequent
+                intensity = min(255, 120 + item['Frequency'] * 6)
+                color = f"rgba({intensity}, 69, 122, 0.85)"
+                if st.button(f"{item['Sin Word']} ({item['Frequency']})", key=f"alpha_{i}"):
+                    st.session_state['search_word'] = item['Sin Word']
+                    st.session_state['auto_search'] = True
+                    st.rerun()
 else:
     st.info("Click the button above to build the sin word analysis from all messages.")
 
