@@ -51,7 +51,7 @@ st.markdown("""
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
-# ============ SESSION STATE INITIALIZATION ============
+# ============ SESSION STATE ============
 if "search_in_progress" not in st.session_state:
     st.session_state.search_in_progress = False
 if "search_results" not in st.session_state:
@@ -96,7 +96,7 @@ def search_file(file_path, search_word):
     return None
 
 def run_search_in_background(search_word):
-    """This function runs in a background thread"""
+    """Background thread function"""
     st.session_state.search_in_progress = True
     st.session_state.search_word = search_word
     st.session_state.search_results = []
@@ -118,12 +118,11 @@ def run_search_in_background(search_word):
                 results.append(result)
                 match_count += 1
 
-            # Update session state for live progress
             st.session_state.search_file_count = i + 1
             st.session_state.search_match_count = match_count
             st.session_state.search_results = results.copy()
 
-    # Final state
+    # Finished
     st.session_state.search_in_progress = False
     st.session_state.search_results = results
     st.session_state.search_match_count = match_count
@@ -146,26 +145,33 @@ with col1:
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-# ============ SEARCH LOGIC ============
+# ============ START SEARCH ============
 if search_clicked and search_word:
-    # Start background search
+    # Clear previous results
+    st.session_state.search_results = None
+    st.session_state.search_in_progress = False
+
+    # Start background thread
     thread = threading.Thread(target=run_search_in_background, args=(search_word,), daemon=True)
     thread.start()
+
+    # Give the thread a moment to start, then rerun
+    time.sleep(0.3)
     st.rerun()
 
-# ============ SHOW PROGRESS WHILE SEARCHING ============
+# ============ SHOW PROGRESS ============
 if st.session_state.search_in_progress:
     st.info(f"🔍 Searching for **'{st.session_state.search_word}'** ...")
-    
-    progress = st.session_state.search_file_count / max(st.session_state.search_file_count, 1)
-    st.progress(progress)
-    
+
+    progress_value = st.session_state.search_file_count / max(st.session_state.search_file_count or 1, 1)
+    st.progress(progress_value)
+
     st.markdown(f"""
-    **Files processed:** {st.session_state.search_file_count:,}  
-    **Matches found so far:** {st.session_state.search_match_count:,}
+    **Files processed:** {st.session_state.search_file_count:,} / ~1,407  
+    **Matches found:** {st.session_state.search_match_count:,}
     """)
-    
-    time.sleep(0.8)
+
+    time.sleep(0.6)
     st.rerun()
 
 # ============ SHOW RESULTS ============
@@ -180,7 +186,7 @@ elif st.session_state.search_results is not None:
         definition = get_word_definition(search_word)
         st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
 
-        # ========== DOWNLOAD BUTTON AT TOP ==========
+        # DOWNLOAD BUTTON AT TOP
         doc = Document()
         for section in doc.sections:
             section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -200,7 +206,7 @@ elif st.session_state.search_results is not None:
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 )
 
-        # Results
+        # Results list
         results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
         st.subheader("📋 Search Results")
 
