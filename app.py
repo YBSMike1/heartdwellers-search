@@ -56,7 +56,35 @@ st.markdown("""
 DOCX_FOLDER = "Heartdwellers Docxs"
 
 # ============ BIBLICAL SIN KEYWORDS ============
-SIN_KEYWORDS = { ... }  # (kept the full list from before)
+SIN_KEYWORDS = {
+    "pride", "proud", "arrogance", "haughty", "boastful", "arrogant",
+    "lust", "lustful", "sexual immorality", "adultery", "fornication",
+    "greed", "covetous", "covetousness", "materialism",
+    "envy", "envious", "jealousy", "jealous",
+    "anger", "wrath", "rage", "fury",
+    "gossip", "slander", "backbiting", "talebearer",
+    "offense", "offended", "bitterness", "bitter", "unforgiveness", "unforgiving",
+    "idolatry", "idol", "idols",
+    "lying", "lie", "deceit", "deception", "falsehood",
+    "stealing", "thief", "robbery",
+    "gluttony", "gluttonous",
+    "sloth", "lazy", "laziness", "idle",
+    "fear", "fearful", "unbelief", "doubt", "doubting",
+    "strife", "division", "discord", "contention",
+    "witchcraft", "occult", "sorcery",
+    "rebellion", "rebellious",
+    "hypocrisy", "hypocrite",
+    "judgmental", "judging", "judgment",
+    "complaining", "murmuring",
+    "selfishness", "selfish",
+    "worldliness", "worldly",
+    "drunkenness", "drunk",
+    "hatred", "hate", "malice",
+    "revenge", "vengeance",
+    "deception", "deceive",
+    "stubbornness", "stubborn",
+    "blasphemy", "blasphemous"
+}
 
 def get_word_definition(word):
     if not word or len(word) < 2: return "Please enter a valid word."
@@ -263,7 +291,7 @@ if search_clicked or st.session_state.get("auto_search", False):
 st.markdown("---")
 st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
-st.markdown("Click any colored sin word below to instantly search it.")
+st.markdown("Click the **colored sin word** below to instantly search it.")
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
     with st.spinner("Scanning all messages for sin-related words..."):
@@ -300,6 +328,7 @@ if sin_data:
             with cols[i % 3]:
                 intensity = min(255, 90 + item['Frequency'] * 8)
                 color = f"rgba({intensity}, 69, 122, 0.95)"
+                html = f'<span style="background-color:{color}; color:white; padding:8px 12px; border-radius:8px; font-size:1.05em; cursor:pointer; display:block; margin:4px 0;" onclick="window.parent.postMessage({{word: \'{item["Sin Word"]}\'}}, \'*\')">**{item["Sin Word"]}** ({item["Frequency"]})</span>'
                 if st.button(f"{item['Sin Word']} ({item['Frequency']})", key=f"alpha_{i}"):
                     st.session_state['search_word'] = item['Sin Word']
                     st.session_state['auto_search'] = True
