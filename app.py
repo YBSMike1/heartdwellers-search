@@ -86,9 +86,7 @@ def search_italic_text(search_word, folder_path):
     results = []
     file_count = 0
     match_count = 0
-
-    # Silent handling — no user-facing messages about missing folder
-    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+    if not os.path.exists(folder_path):
         return [], 0, 0
 
     progress_bar = st.progress(0)
@@ -179,8 +177,10 @@ if search_clicked:
                 highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', 
                                      f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
                                      res['text'], flags=re.IGNORECASE)
+                
+                # ========== ITALIC TEXT ADDED HERE ==========
                 with st.expander(f"📄 {res['file']}", expanded=True):
-                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
+                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
             if os.path.exists("Bottom banner Std.png"):
                 col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
