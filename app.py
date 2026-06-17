@@ -216,7 +216,6 @@ def build_sin_word_analysis():
 
     sin_data = {
         "built_on": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "total_messages_scanned": total_files,
         "total_unique_sin_words_found": len(sin_counter),
         "total_sin_occurrences": total_sin_occurrences,
         "sin_words": ranked_sins
@@ -245,6 +244,7 @@ if os.path.exists("Newest banner.png"):
 
 st.markdown("### Enter a word or phrase")
 
+# Search input that reads from session_state
 search_word = st.text_input(
     "Search term",
     value=st.session_state.get("search_word", ""),
@@ -263,6 +263,7 @@ if search_clicked or st.session_state.get("auto_search", False):
         with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
         
+        # Clear auto_search flag after use
         if "auto_search" in st.session_state:
             del st.session_state["auto_search"]
         
@@ -304,7 +305,7 @@ st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
 st.markdown("""
 This section shows how often **biblical sin-related words** appear in Jesus’ direct words (italic text).  
-**Click any numbered word below** to automatically search for it.
+**Click any word below** to automatically search for it.
 """)
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
@@ -316,18 +317,16 @@ sin_data = load_sin_word_analysis()
 
 if sin_data:
     st.success(f"**Last updated:** {sin_data['built_on']}")
-    st.write(f"**Total messages searched:** {sin_data.get('total_messages_scanned', 0):,}")
     st.write(f"**Unique sin-related words found:** {sin_data['total_unique_sin_words_found']}")
-    st.write(f"**Total occurrences of sin-related words:** {sin_data['total_sin_occurrences']:,}")
+    st.write(f"**Total occurrences:** {sin_data['total_sin_occurrences']:,}")
 
-    # === NUMBERED CLICKABLE SIN WORDS ===
+    # === CLICKABLE SIN WORDS ===
     if sin_data['sin_words']:
         st.markdown("**Click a word to search:**")
         cols = st.columns(6)
-        for i, item in enumerate(sin_data['sin_words'][:30]):
+        for i, item in enumerate(sin_data['sin_words'][:30]):  # Show top 30
             with cols[i % 6]:
-                button_label = f"{item['Rank']}. {item['Sin Word']}"
-                if st.button(button_label, key=f"sin_{i}"):
+                if st.button(item['Sin Word'], key=f"sin_{i}"):
                     st.session_state['search_word'] = item['Sin Word']
                     st.session_state['auto_search'] = True
                     st.rerun()
