@@ -7,21 +7,32 @@ import tempfile
 import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
 import json
 from collections import Counter
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered", page_icon="❤️")
 
-# === THEME + EXACT COLORED HOTLINK STYLE YOU ASKED FOR ===
 st.markdown("""
 <style>
     .stApp { background-color: #1F1A24; }
     .main .block-container { background-color: #2A2533; border-radius: 20px; padding: 2rem; max-width: 1100px; }
     h1 { color: #C4457A; font-weight: 700; }
     .stTextInput input { background:#fff !important; color:#000 !important; border:2px solid #C4457A !important; font-size:1.1em; padding:14px; }
-    .stButton button { background: linear-gradient(90deg, #C4457A, #E8A0B5) !important; color: white !important; border:none !important; border-radius:12px !important; font-size:1.55em !important; font-weight:700 !important; padding:16px 22px !important; margin:6px 0 !important; width:100% !important; text-align:left !important; box-shadow:0 4px 15px rgba(196,69,122,0.6); }
-    .stButton button:hover { background: linear-gradient(90deg, #E8A0B5, #C4457A) !important; color:#1F1A24 !important; transform:scale(1.03); }
+    .stButton button {
+        background: linear-gradient(90deg, #9C1A5B, #E8A0B5) !important;
+        color: white !important;
+        border:none !important;
+        border-radius:8px !important;
+        font-size:1.2em !important;
+        font-weight:700 !important;
+        padding:5px 12px !important;
+        margin:4px !important;
+        width:auto !important;
+        min-width:auto !important;
+        display:inline-block !important;
+        box-shadow:0 3px 10px rgba(156,26,91,0.5);
+    }
+    .stButton button:hover { background: linear-gradient(90deg, #E8A0B5, #C4457A) !important; color:#1F1A24 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -98,7 +109,7 @@ def load_sin_word_analysis():
         with open("sin_word_library.json") as f: return json.load(f)
     return None
 
-# ==================== FULL RESTORED UI ====================
+# ==================== UI ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
