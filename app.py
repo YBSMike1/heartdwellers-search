@@ -109,7 +109,7 @@ with col_btn2:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
                 doc.save(tmp.name)
                 with open(tmp.name, "rb") as f:
-                    st.download_button("📥 Download Full Word Report (Word)", f, f"Jesus_on_{search_word}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    st.download_button("📥 Download Full Word Report", f, f"Jesus_on_{search_word}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
             st.subheader("📋 Search Results (click to expand)")
@@ -124,4 +124,4 @@ with col_btn2:
         else:
             st.warning("Please enter a word or phrase")
 
-st.caption("❤️ Download button now at the top of results • Everything else unchanged • Stable pre-sin version")
+st.caption("❤️ Download button now at the top of results • Full expanders restored • Clean stable version")
