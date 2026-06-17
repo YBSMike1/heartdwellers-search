@@ -7,109 +7,139 @@ import tempfile
 import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import json
-from collections import Counter
+import time
+from spellchecker import SpellChecker
 
-st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered", page_icon="❤️")
+st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
+# === SOFT ELEGANT THEME ===
 st.markdown("""
 <style>
     .stApp { background-color: #1F1A24; }
-    .main .block-container { background-color: #2A2533; border-radius: 20px; padding: 2rem; max-width: 1100px; }
-    h1 { color: #C4457A; font-weight: 700; }
-    .stTextInput input { background:#fff !important; color:#000 !important; border:2px solid #C4457A !important; font-size:1.1em; padding:14px; }
-    .stButton button {
-        background: linear-gradient(90deg, #9C1A5B, #E8A0B5) !important;
-        color: white !important;
-        border:none !important;
-        border-radius:8px !important;
-        font-size:1.2em !important;
-        font-weight:700 !important;
-        padding:5px 12px !important;
-        margin:4px !important;
-        width:auto !important;
-        min-width:auto !important;
-        display:inline-block !important;
-        box-shadow:0 3px 10px rgba(156,26,91,0.5);
+    .main .block-container {
+        background-color: #2A2533;
+        border-radius: 20px;
+        padding: 2.5rem 2rem;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+        max-width: 1100px;
     }
-    .stButton button:hover { background: linear-gradient(90deg, #E8A0B5, #C4457A) !important; color:#1F1A24 !important; }
+    h1 { color: #C4457A; font-weight: 700; letter-spacing: -0.5px; }
+    .stTextInput input {
+        background-color: #ffffff !important;
+        color: #1F1A24 !important;
+        border: 2px solid #C4457A !important;
+        border-radius: 14px !important;
+        font-size: 1.1rem !important;
+        padding: 14px 18px !important;
+        font-weight: 500;
+    }
+    .stButton button[kind="primary"] {
+        background-color: #C4457A !important;
+        color: white !important;
+        border: 2px solid #E8A0B5 !important;
+        border-radius: 50px !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        padding: 0.75rem 2.2rem !important;
+        min-height: 3.4rem !important;
+        box-shadow: 0 6px 20px rgba(196, 69, 122, 0.35) !important;
+    }
+    .stButton button[kind="primary"]:hover {
+        background-color: #E8A0B5 !important;
+        color: #1F1A24 !important;
+        border-color: #C4457A !important;
+    }
+    div[data-testid="stExpander"] > div > div > div > div > button {
+        background-color: #322C40 !important;
+        border: 1px solid #C4457A !important;
+        border-radius: 12px !important;
+        color: #F5E6F0 !important;
+    }
+    div[data-testid="stExpander"] div[role="region"] {
+        background-color: #241F2E !important;
+        border-left: 5px solid #C4457A !important;
+    }
+    .stProgress > div > div > div { background-color: #C4457A !important; }
 </style>
 """, unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
-CACHE_FILE = "italic_index.json"
-
-SIN_KEYWORDS = {"pride","proud","lust","greed","envy","anger","gossip","offense","bitterness","idolatry","lying","stealing","gluttony","sloth","fear","strife","witchcraft","rebellion","hypocrisy","judging","complaining","selfishness","worldliness","drunkenness","hatred","revenge","stubbornness","blasphemy","deception","jealousy","wrath","doubt","unbelief","laziness","arrogance","haughty","fornication","adultery","slander","unforgiveness","idol","falsehood","idle","contention","sorcery","hypocrite","murmuring","selfish","worldly","drunk","hate","malice","vengeance","deceive","stubborn","blasphemous","covetous","fearful","rebellious","offended","bitter","unforgiving","materialism","jealous","lazy","idle","doubting","strife","division","discord","contention","occult","sorcery","hypocrisy","judgmental","murmuring","selfishness","worldliness","drunkenness","hatred","revenge","stubbornness","blasphemy"}
-
-def extract_italics(file_path):
-    try:
-        doc = Document(file_path)
-        italics = [run.text.strip() for p in doc.paragraphs for run in p.runs if getattr(run, 'italic', False) and run.text.strip()]
-        if italics:
-            return {"file": os.path.relpath(file_path, DOCX_FOLDER), "italic_text": " | ".join(italics)}
-    except: pass
-    return None
-
-def build_italic_cache():
-    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) 
-                 for f in files if f.lower().endswith('.docx') and not any(x in f.lower() for x in ["compilation ", "~$", "eom", "all messages"])]
-    with ThreadPoolExecutor(max_workers=12) as executor:
-        futures = {executor.submit(extract_italics, f): f for f in all_files}
-        index = []
-        for i, future in enumerate(as_completed(futures)):
-            result = future.result()
-            if result: index.append(result)
-    with open(CACHE_FILE, "w") as f: json.dump(index, f)
-    st.success(f"✅ Cache ready! {len(index)} messages indexed")
-    return index
-
-def load_cache():
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE) as f: return json.load(f)
-    return None
-
-def search_italic_text(search_word):
-    cache = load_cache() or build_italic_cache()
-    pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
-    results = [e for e in cache if pattern.search(e["italic_text"])]
-    return results, len(cache), len(results)
+spell = SpellChecker()
 
 def get_word_definition(word):
+    if not word or len(word) < 2: return "Please enter a valid word."
     try:
         url = f"https://wordsapiv1.p.rapidapi.com/words/{word.lower()}/definitions"
         headers = {'x-rapidapi-key': "e10c87331emshb838f6dd5aeb4e8p1a63dbjsn139eec4460a9", 'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"}
-        r = requests.get(url, headers=headers, timeout=8)
-        if r.status_code == 200:
-            data = r.json()
-            return data.get("definitions", [{}])[0].get("definition", "No definition found.")
-    except: pass
-    return "Definition not available at this time."
+        response = requests.get(url, headers=headers, timeout=8)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("definitions") and len(data["definitions"]) > 0:
+                return data["definitions"][0].get("definition", "No definition found.")
+        return "No definition found for this word."
+    except:
+        return "Definition not available at this time."
 
 def extract_date_from_path(file_path):
     try:
-        m = re.search(r'(\w+\s+\d{4})', file_path)
-        if m: return datetime.strptime(m.group(1), "%b %Y")
+        match = re.search(r'(\w+\s+\d{4})', file_path)
+        if match: return datetime.strptime(match.group(1), "%b %Y")
     except: pass
     return datetime.min
 
-def build_sin_word_analysis():
-    cache = load_cache() or build_italic_cache()
-    sin_counter = Counter()
-    for e in cache:
-        for w in re.findall(r'\b[a-zA-Z]+\b', e["italic_text"].lower()):
-            if w in SIN_KEYWORDS: sin_counter[w] += 1
-    total = sum(sin_counter.values())
-    ranked = [{"Rank": r+1, "Sin Word": w, "Frequency": f, "% of Sin Mentions": round(f/total*100, 2) if total else 0} for r, (w, f) in enumerate(sin_counter.most_common())]
-    sin_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(cache), "total_sin_occurrences": total, "sin_words": ranked}
-    with open("sin_word_library.json", "w") as f: json.dump(sin_data, f, indent=2)
-    return sin_data
-
-def load_sin_word_analysis():
-    if os.path.exists("sin_word_library.json"):
-        with open("sin_word_library.json") as f: return json.load(f)
+def search_file(file_path, search_word):
+    try:
+        doc = Document(file_path)
+        pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
+        for p in doc.paragraphs:
+            italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+            if italic_text and pattern.search(italic_text):
+                return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip()}
+    except: pass
     return None
 
-# ==================== UI ====================
+def search_italic_text(search_word, folder_path):
+    results = []
+    file_count = 0
+    match_count = 0
+    if not os.path.exists(folder_path):
+        st.error(f"Folder not found: {folder_path}")
+        return [], 0, 0
+
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    start_time = time.time()
+
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path) 
+                 for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+    total_files = len(all_files)
+
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        future_to_file = {executor.submit(search_file, f, search_word): f for f in all_files}
+        for i, future in enumerate(as_completed(future_to_file)):
+            result = future.result()
+            if result:
+                results.append(result)
+                match_count += 1
+            file_count += 1
+            progress = (i + 1) / max(total_files, 1)
+            progress_bar.progress(progress)
+            elapsed = time.time() - start_time
+            files_done = i + 1
+            files_remaining = total_files - files_done
+            if files_done > 0 and files_remaining > 0:
+                eta_str = f"~{int((elapsed / files_done) * files_remaining)}s"
+            else:
+                eta_str = "calculating..."
+            percent = int(progress * 100)
+            status_text.markdown(f"**Searching** {files_done:,} / {total_files:,} files • **{percent}%** • {eta_str} remaining")
+
+    progress_bar.progress(1.0)
+    status_text.empty()
+    return results, file_count, match_count
+
+# ============ UI ============
+
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
@@ -118,72 +148,63 @@ if os.path.exists("Newest banner.png"):
     with col2:
         st.image("Newest banner.png", width=3400)
 
-if st.button("🚀 Build Fast Cache"):
-    build_italic_cache()
+st.markdown("### Enter a word or phrase")
 
-search_word = st.text_input("Search term", value=st.session_state.get("search_word", ""), placeholder="e.g. pride, love, rapture, faith, obedience, grace", label_visibility="collapsed")
+col1, col2 = st.columns([4, 1.2])
+with col1:
+    search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
+with col2:
+    search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-col_btn1, col_btn2 = st.columns([4, 1.2])
-with col_btn2:
-    if st.button("🔍 Search", type="primary", use_container_width=True):
-        if search_word:
-            with st.spinner("Searching..."):
-                results, file_count, match_count = search_italic_text(search_word)
-            st.success(f"✅ Found {match_count:,} matches in {file_count:,} messages")
+if search_clicked:
+    if not search_word:
+        st.warning("Please enter a word or phrase.")
+    else:
+        with st.spinner("Searching messages..."):
+            results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+
+        if results:
+            st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             definition = get_word_definition(search_word)
-            st.info(f"**📖 {search_word}:** {definition}")
+            st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-            st.subheader("📋 Search Results (click to expand)")
+
+            st.subheader("📋 Search Results")
             for res in results:
-                highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background:#ffeb3b;color:black;font-weight:bold;">{search_word}</span>', res["italic_text"], flags=re.IGNORECASE)
+                highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
                 with st.expander(f"📄 {res['file']}", expanded=True):
-                    st.markdown(f'<div style="background:#241F2E;padding:20px;border-left:6px solid #C4457A;border-radius:12px;color:#F5E6F0;">{highlighted}</div>', unsafe_allow_html=True)
+                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
+
             doc = Document()
-            for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+            for section in doc.sections:
+                section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
             doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
             for res in results:
                 doc.add_paragraph(res["file"], style='Heading 3')
-                p = doc.add_paragraph(res["italic_text"])
+                p = doc.add_paragraph(res["text"])
                 for run in p.runs: run.italic = True
             with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
                 doc.save(tmp.name)
                 with open(tmp.name, "rb") as f:
-                    st.download_button("📥 Download Full Word Report", f, f"Jesus_on_{search_word}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {search_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
             if os.path.exists("Bottom banner Std.png"):
                 col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
                 with col2:
                     st.image("Bottom banner Std.png", width=3400)
         else:
-            st.warning("Please enter a word or phrase")
+            # === SPELLING SUGGESTION ===
+            corrected = spell.correction(search_word.lower())
+            if corrected and corrected != search_word.lower():
+                st.warning(f"No matches found for **'{search_word}'**.")
+                if st.button(f"🔍 Search for “{corrected}” instead", type="primary"):
+                    # Re-run search with corrected word
+                    with st.spinner("Searching messages..."):
+                        results, file_count, match_count = search_italic_text(corrected, DOCX_FOLDER)
+                    if results:
+                        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+                        # ... (you can paste the same result display code here if you want)
+            else:
+                st.info("No matches found.")
 
-st.markdown("---")
-st.header("📖 Sin Word Frequency in Jesus’ Messages")
-if st.button("🔄 Build / Refresh Sin Analysis"):
-    sin_data = build_sin_word_analysis()
-    st.success("✅ Full analysis ready!")
-
-sin_data = load_sin_word_analysis()
-if sin_data:
-    st.success(f"Messages scanned: {sin_data['total_messages_scanned']} • Total sin occurrences: {sin_data['total_sin_occurrences']}")
-    tab1, tab2 = st.tabs(["🔥 Ranked by Frequency", "🔤 Alphabetical (All Words)"])
-    with tab1:
-        cols = st.columns(6)
-        for i, item in enumerate(sin_data['sin_words'][:36]):
-            with cols[i % 6]:
-                if st.button(f"{item['Rank']}. {item['Sin Word']} ({item['Frequency']})", key=f"rank_{i}"):
-                    st.session_state['search_word'] = item['Sin Word']
-                    st.session_state['auto_search'] = True
-                    st.rerun()
-    with tab2:
-        st.markdown("**All sin words — click the colored word to instantly search**")
-        all_sorted = sorted(sin_data['sin_words'], key=lambda x: x['Sin Word'])
-        cols = st.columns(3)
-        for i, item in enumerate(all_sorted):
-            with cols[i % 3]:
-                intensity = min(255, 70 + item['Frequency'] * 11)
-                color = f"rgba({intensity}, 69, 122, 0.98)"
-                label = f"**{item['Sin Word']}** ({item['Frequency']})"
-                if st.button(label, key=f"alpha_{i}"):
-                    st.session_state['search_word'] = item['Sin Word']
-                    st.session_state['auto_search'] = True
-                    st.rerun()
+st.caption("Heartdwellers Search Tool — Built for the community")
