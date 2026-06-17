@@ -302,7 +302,7 @@ if search_clicked or st.session_state.get("auto_search", False):
 st.markdown("---")
 st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
-st.markdown("Click any sin word below to search it instantly.")
+st.markdown("Click any word below to instantly search it.")
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
     with st.spinner("Scanning all messages for sin-related words..."):
@@ -315,16 +315,14 @@ if sin_data:
     st.success(f"**Last updated:** {sin_data['built_on']} • **Messages scanned:** {sin_data.get('total_messages_scanned', 0):,}")
     st.write(f"**Unique sin words found:** {sin_data['total_unique_sin_words_found']} • **Total occurrences:** {sin_data['total_sin_occurrences']:,}")
 
-    tab1, tab2 = st.tabs(["🔥 Ranked by Frequency", "🔤 Alphabetical"])
+    tab1, tab2 = st.tabs(["🔥 Ranked by Frequency", "🔤 Alphabetical (All Words)"])
 
     with tab1:
         cols = st.columns(6)
-        for i, item in enumerate(sin_data['sin_words'][:30]):
+        for i, item in enumerate(sin_data['sin_words'][:36]):
             with cols[i % 6]:
-                intensity = min(255, 100 + item['Frequency'] * 4)
-                color = f"rgba({intensity}, 69, 122, 0.9)"
-                button_label = f"{item['Rank']}. {item['Sin Word']}"
-                if st.button(button_label, key=f"rank_{i}"):
+                intensity = min(255, 80 + item['Frequency'] * 8)
+                if st.button(f"{item['Rank']}. {item['Sin Word']}", key=f"rank_{i}"):
                     st.session_state['search_word'] = item['Sin Word']
                     st.session_state['auto_search'] = True
                     st.rerun()
@@ -334,14 +332,13 @@ if sin_data:
         st.dataframe(df, use_container_width=True, hide_index=True)
 
     with tab2:
-        st.markdown("**Click any word below**")
-        alpha_cols = st.columns(5)
-        sorted_words = sorted(sin_data['sin_words'], key=lambda x: x['Sin Word'])
-        for i, item in enumerate(sorted_words[:40]):  # Top 40 for easy scanning
-            with alpha_cols[i % 5]:
-                # Color coding: deeper rose = more frequent
-                intensity = min(255, 120 + item['Frequency'] * 6)
-                color = f"rgba({intensity}, 69, 122, 0.85)"
+        st.markdown("**All sin words found — click any to search**")
+        all_sorted = sorted(sin_data['sin_words'], key=lambda x: x['Sin Word'])
+        cols = st.columns(3)
+        for i, item in enumerate(all_sorted):
+            with cols[i % 3]:
+                intensity = min(255, 80 + item['Frequency'] * 6)
+                color_style = f"background-color: rgba({intensity}, 69, 122, 0.9); color: white; font-weight: 700; padding: 8px; border-radius: 8px; text-align: center;"
                 if st.button(f"{item['Sin Word']} ({item['Frequency']})", key=f"alpha_{i}"):
                     st.session_state['search_word'] = item['Sin Word']
                     st.session_state['auto_search'] = True
