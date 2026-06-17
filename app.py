@@ -43,7 +43,24 @@ st.markdown("""
         font-size: 1.1rem !important;
         padding: 0.75rem 2.2rem !important;
         min-height: 3.4rem !important;
+        box-shadow: 0 6px 20px rgba(196, 69, 122, 0.35) !important;
     }
+    .stButton button[kind="primary"]:hover {
+        background-color: #E8A0B5 !important;
+        color: #1F1A24 !important;
+        border-color: #C4457A !important;
+    }
+    div[data-testid="stExpander"] > div > div > div > div > button {
+        background-color: #322C40 !important;
+        border: 1px solid #C4457A !important;
+        border-radius: 12px !important;
+        color: #F5E6F0 !important;
+    }
+    div[data-testid="stExpander"] div[role="region"] {
+        background-color: #241F2E !important;
+        border-left: 5px solid #C4457A !important;
+    }
+    .stProgress > div > div > div { background-color: #C4457A !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -285,7 +302,7 @@ if search_clicked or st.session_state.get("auto_search", False):
 st.markdown("---")
 st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
-st.markdown("Click any colored sin word below to instantly search it.")
+st.markdown("Click any word below to instantly search it.")
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
     with st.spinner("Scanning all messages for sin-related words..."):
@@ -304,7 +321,7 @@ if sin_data:
         cols = st.columns(6)
         for i, item in enumerate(sin_data['sin_words'][:36]):
             with cols[i % 6]:
-                intensity = min(255, 100 + item['Frequency'] * 7)
+                intensity = min(255, 80 + item['Frequency'] * 8)
                 if st.button(f"{item['Rank']}. {item['Sin Word']}", key=f"rank_{i}"):
                     st.session_state['search_word'] = item['Sin Word']
                     st.session_state['auto_search'] = True
@@ -315,13 +332,13 @@ if sin_data:
         st.dataframe(df, use_container_width=True, hide_index=True)
 
     with tab2:
-        st.markdown("**All sin words — click the word to search**")
+        st.markdown("**All sin words found — click any to search**")
         all_sorted = sorted(sin_data['sin_words'], key=lambda x: x['Sin Word'])
         cols = st.columns(3)
         for i, item in enumerate(all_sorted):
             with cols[i % 3]:
-                intensity = min(255, 90 + item['Frequency'] * 8)
-                color = f"rgba({intensity}, 69, 122, 0.95)"
+                intensity = min(255, 80 + item['Frequency'] * 6)
+                color_style = f"background-color: rgba({intensity}, 69, 122, 0.9); color: white; font-weight: 700; padding: 8px; border-radius: 8px; text-align: center;"
                 if st.button(f"{item['Sin Word']} ({item['Frequency']})", key=f"alpha_{i}"):
                     st.session_state['search_word'] = item['Sin Word']
                     st.session_state['auto_search'] = True
