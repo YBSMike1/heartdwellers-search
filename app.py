@@ -83,24 +83,13 @@ def search_file(file_path, search_word):
     return None
 
 def search_italic_text(search_word, folder_path):
-    # ========== IMPROVED ERROR HANDLING ==========
-    if not os.path.exists(folder_path):
-        st.error(f"❌ Folder not found: `{folder_path}`")
-        st.info("""
-        **How to fix:**
-        1. Make sure the folder `Heartdwellers Docxs` exists in the same directory as this app.
-        2. If you're running this on Streamlit Cloud, upload the folder to your GitHub repository.
-        """)
-        return [], 0, 0
-
-    if not os.path.isdir(folder_path):
-        st.error(f"❌ `{folder_path}` exists but is not a folder.")
-        return [], 0, 0
-    # ============================================
-
     results = []
     file_count = 0
     match_count = 0
+
+    # Silent handling — no user-facing messages about missing folder
+    if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
+        return [], 0, 0
 
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -108,7 +97,6 @@ def search_italic_text(search_word, folder_path):
 
     all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path)
                  for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
-
     total_files = len(all_files)
 
     with ThreadPoolExecutor(max_workers=12) as executor:
