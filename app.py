@@ -67,6 +67,7 @@ st.markdown("""
 DOCX_FOLDER = "Heartdwellers Docxs"
 
 # ============ BIBLICAL SIN KEYWORDS ============
+# These are common sin-related words found in Scripture
 SIN_KEYWORDS = {
     "pride", "proud", "arrogance", "haughty", "boastful", "arrogant",
     "lust", "lustful", "sexual immorality", "adultery", "fornication",
@@ -172,6 +173,7 @@ def search_italic_text(search_word, folder_path):
 # ============ SIN WORD ANALYSIS ============
 
 def build_sin_word_analysis():
+    """Builds frequency count of biblical sin-related words in italic text"""
     sin_counter = Counter()
     processed = 0
 
@@ -244,29 +246,18 @@ if os.path.exists("Newest banner.png"):
 
 st.markdown("### Enter a word or phrase")
 
-# Search input that reads from session_state
-search_word = st.text_input(
-    "Search term",
-    value=st.session_state.get("search_word", ""),
-    placeholder="e.g. rapture, love, faith (typos ok)",
-    label_visibility="collapsed"
-)
-
 col1, col2 = st.columns([4, 1.2])
+with col1:
+    search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-if search_clicked or st.session_state.get("auto_search", False):
+if search_clicked:
     if not search_word:
         st.warning("Please enter a word or phrase.")
     else:
         with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
-        
-        # Clear auto_search flag after use
-        if "auto_search" in st.session_state:
-            del st.session_state["auto_search"]
-        
         if results:
             st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             definition = get_word_definition(search_word)
@@ -304,8 +295,8 @@ st.markdown("---")
 st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
 st.markdown("""
-This section shows how often **biblical sin-related words** appear in Jesus’ direct words (italic text).  
-**Click any word below** to automatically search for it.
+This section shows how often **biblical sin-related words** appear in the italic text (Jesus’ direct words) across all messages.  
+Common English stopwords are already excluded. This is designed to help with self-examination.
 """)
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
@@ -318,20 +309,8 @@ sin_data = load_sin_word_analysis()
 if sin_data:
     st.success(f"**Last updated:** {sin_data['built_on']}")
     st.write(f"**Unique sin-related words found:** {sin_data['total_unique_sin_words_found']}")
-    st.write(f"**Total occurrences:** {sin_data['total_sin_occurrences']:,}")
+    st.write(f"**Total occurrences of sin-related words:** {sin_data['total_sin_occurrences']:,}")
 
-    # === CLICKABLE SIN WORDS ===
-    if sin_data['sin_words']:
-        st.markdown("**Click a word to search:**")
-        cols = st.columns(6)
-        for i, item in enumerate(sin_data['sin_words'][:30]):  # Show top 30
-            with cols[i % 6]:
-                if st.button(item['Sin Word'], key=f"sin_{i}"):
-                    st.session_state['search_word'] = item['Sin Word']
-                    st.session_state['auto_search'] = True
-                    st.rerun()
-
-    # Full table
     import pandas as pd
     df = pd.DataFrame(sin_data['sin_words'])
     st.dataframe(df, use_container_width=True, hide_index=True)
