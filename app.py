@@ -50,6 +50,21 @@ st.markdown("""
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
+# ============ FULL SIN WORD LIST (Alphabetical Grid) ============
+SIN_WORDS = [
+    "adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness",
+    "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness",
+    "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk",
+    "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony",
+    "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry",
+    "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental",
+    "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism",
+    "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion",
+    "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery",
+    "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness",
+    "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"
+]
+
 def get_word_definition(word):
     if not word or len(word) < 2: return "Please enter a valid word."
     try:
@@ -177,8 +192,6 @@ if search_clicked:
                 highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', 
                                      f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
                                      res['text'], flags=re.IGNORECASE)
-                
-                # ========== ITALIC TEXT ADDED HERE ==========
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
@@ -197,5 +210,64 @@ if search_clicked:
                         st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             else:
                 st.info("No matches found.")
+
+# ============ NEW: ALPHABETICAL SIN GRID ============
+st.markdown("---")
+st.header("📖 Sin Wheel – Quick Browse (A–Z)")
+
+st.markdown("Click any sin word below to instantly search it.")
+
+# Sort alphabetically
+sorted_sins = sorted(SIN_WORDS)
+
+# Display in 5 columns
+cols = st.columns(5)
+for i, sin in enumerate(sorted_sins):
+    with cols[i % 5]:
+        if st.button(sin, key=f"sin_{sin}"):
+            # Auto-fill search and trigger search
+            st.session_state["auto_search_word"] = sin
+            st.rerun()
+
+# Auto-trigger search if a sin word was clicked
+if "auto_search_word" in st.session_state:
+    search_word = st.session_state.pop("auto_search_word")
+    with st.spinner("Searching messages..."):
+        results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+
+    if results:
+        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+        definition = get_word_definition(search_word)
+        st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
+
+        # DOWNLOAD BUTTON AT TOP
+        doc = Document()
+        for section in doc.sections:
+            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+        for res in results:
+            doc.add_paragraph(res["file"], style='Heading 3')
+            p = doc.add_paragraph(res["text"])
+            for run in p.runs: run.italic = True
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            doc.save(tmp.name)
+            with open(tmp.name, "rb") as f:
+                st.download_button(
+                    label="📥 Download Full Report (Word Document)",
+                    data=f,
+                    file_name=f"Jesus speaks about {search_word}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+
+        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+        st.subheader("📋 Search Results")
+
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', 
+                                 f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
+                                 res['text'], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
 st.caption("Heartdwellers Search Tool — Built for the community")
