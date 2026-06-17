@@ -67,7 +67,6 @@ st.markdown("""
 DOCX_FOLDER = "Heartdwellers Docxs"
 
 # ============ BIBLICAL SIN KEYWORDS ============
-# These are common sin-related words found in Scripture
 SIN_KEYWORDS = {
     "pride", "proud", "arrogance", "haughty", "boastful", "arrogant",
     "lust", "lustful", "sexual immorality", "adultery", "fornication",
@@ -173,7 +172,6 @@ def search_italic_text(search_word, folder_path):
 # ============ SIN WORD ANALYSIS ============
 
 def build_sin_word_analysis():
-    """Builds frequency count of biblical sin-related words in italic text"""
     sin_counter = Counter()
     processed = 0
 
@@ -295,8 +293,8 @@ st.markdown("---")
 st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
 st.markdown("""
-This section shows how often **biblical sin-related words** appear in the italic text (Jesus’ direct words) across all messages.  
-Common English stopwords are already excluded. This is designed to help with self-examination.
+This section shows how often **biblical sin-related words** appear in Jesus’ direct words (italic text).  
+Click any word below to automatically search for it.
 """)
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
@@ -309,8 +307,20 @@ sin_data = load_sin_word_analysis()
 if sin_data:
     st.success(f"**Last updated:** {sin_data['built_on']}")
     st.write(f"**Unique sin-related words found:** {sin_data['total_unique_sin_words_found']}")
-    st.write(f"**Total occurrences of sin-related words:** {sin_data['total_sin_occurrences']:,}")
+    st.write(f"**Total occurrences:** {sin_data['total_sin_occurrences']:,}")
 
+    # === CLICKABLE SIN WORDS ===
+    if sin_data['sin_words']:
+        st.markdown("**Quick Search by Sin Word:**")
+        cols = st.columns(6)
+        for i, item in enumerate(sin_data['sin_words'][:24]):  # Show top 24
+            with cols[i % 6]:
+                if st.button(item['Sin Word'], key=f"sin_{i}"):
+                    # Set the search term and trigger search
+                    st.session_state['search_word'] = item['Sin Word']
+                    st.rerun()
+
+    # Show full table
     import pandas as pd
     df = pd.DataFrame(sin_data['sin_words'])
     st.dataframe(df, use_container_width=True, hide_index=True)
