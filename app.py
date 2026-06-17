@@ -66,27 +66,36 @@ st.markdown("""
 
 DOCX_FOLDER = "Heartdwellers Docxs"
 
-# Common English stopwords (excluded from word library)
-STOPWORDS = {
-    "a", "an", "the", "and", "or", "but", "if", "because", "as", "until", "while",
-    "of", "at", "by", "for", "with", "about", "against", "between", "into", "through",
-    "during", "before", "after", "above", "below", "to", "from", "up", "down", "in",
-    "out", "on", "off", "over", "under", "again", "further", "then", "once", "here",
-    "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more",
-    "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so",
-    "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now",
-    "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours",
-    "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers",
-    "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves",
-    "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are",
-    "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does",
-    "did", "doing", "would", "could", "ought", "i'm", "you're", "he's", "she's", "it's",
-    "we're", "they're", "i've", "you've", "we've", "they've", "i'd", "you'd", "he'd",
-    "she'd", "we'd", "they'd", "i'll", "you'll", "he'll", "she'll", "we'll", "they'll",
-    "isn't", "aren't", "wasn't", "weren't", "hasn't", "haven't", "hadn't", "doesn't",
-    "don't", "didn't", "won't", "wouldn't", "shan't", "shouldn't", "can't", "cannot",
-    "couldn't", "mustn't", "let's", "that's", "who's", "what's", "here's", "there's",
-    "when's", "where's", "why's", "how's"
+# ============ BIBLICAL SIN KEYWORDS ============
+# These are common sin-related words found in Scripture
+SIN_KEYWORDS = {
+    "pride", "proud", "arrogance", "haughty", "boastful", "arrogant",
+    "lust", "lustful", "sexual immorality", "adultery", "fornication",
+    "greed", "covetous", "covetousness", "materialism",
+    "envy", "envious", "jealousy", "jealous",
+    "anger", "wrath", "rage", "fury",
+    "gossip", "slander", "backbiting", "talebearer",
+    "offense", "offended", "bitterness", "bitter", "unforgiveness", "unforgiving",
+    "idolatry", "idol", "idols",
+    "lying", "lie", "deceit", "deception", "falsehood",
+    "stealing", "thief", "robbery",
+    "gluttony", "gluttonous",
+    "sloth", "lazy", "laziness", "idle",
+    "fear", "fearful", "unbelief", "doubt", "doubting",
+    "strife", "division", "discord", "contention",
+    "witchcraft", "occult", "sorcery",
+    "rebellion", "rebellious",
+    "hypocrisy", "hypocrite",
+    "judgmental", "judging", "judgment",
+    "complaining", "murmuring",
+    "selfishness", "selfish",
+    "worldliness", "worldly",
+    "drunkenness", "drunk",
+    "hatred", "hate", "malice",
+    "revenge", "vengeance",
+    "deception", "deceive",
+    "stubbornness", "stubborn",
+    "blasphemy", "blasphemous"
 }
 
 def get_word_definition(word):
@@ -161,12 +170,11 @@ def search_italic_text(search_word, folder_path):
     status_text.empty()
     return results, file_count, match_count
 
-# ============ WORD LIBRARY FUNCTIONS ============
+# ============ SIN WORD ANALYSIS ============
 
-def build_word_library():
-    """Scans all messages and builds a word frequency library (excluding stopwords)"""
-    word_counter = Counter()
-    total_files = 0
+def build_sin_word_analysis():
+    """Builds frequency count of biblical sin-related words in italic text"""
+    sin_counter = Counter()
     processed = 0
 
     progress_bar = st.progress(0)
@@ -179,53 +187,50 @@ def build_word_library():
     for file_path in all_files:
         processed += 1
         progress_bar.progress(processed / total_files)
-        status.text(f"Processing: {os.path.basename(file_path)} ({processed}/{total_files})")
+        status.text(f"Scanning: {os.path.basename(file_path)} ({processed}/{total_files})")
 
         try:
             doc = Document(file_path)
             for p in doc.paragraphs:
                 italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
                 if italic_text:
-                    # Clean and split into words
                     words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
                     for word in words:
-                        if word not in STOPWORDS and len(word) > 1:
-                            word_counter[word] += 1
+                        if word in SIN_KEYWORDS:
+                            sin_counter[word] += 1
         except:
             continue
 
     progress_bar.empty()
     status.empty()
 
-    total_occurrences = sum(word_counter.values())
-    total_unique = len(word_counter)
+    total_sin_occurrences = sum(sin_counter.values())
 
-    # Build ranked list
-    ranked_words = []
-    for rank, (word, freq) in enumerate(word_counter.most_common(), 1):
-        percentage = (freq / total_occurrences * 100) if total_occurrences > 0 else 0
-        ranked_words.append({
+    ranked_sins = []
+    for rank, (word, freq) in enumerate(sin_counter.most_common(), 1):
+        percentage = (freq / total_sin_occurrences * 100) if total_sin_occurrences > 0 else 0
+        ranked_sins.append({
             "Rank": rank,
-            "Word": word,
+            "Sin Word": word,
             "Frequency": freq,
-            "% of Total": round(percentage, 2)
+            "% of Sin Mentions": round(percentage, 2)
         })
 
-    library_data = {
+    sin_data = {
         "built_on": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "total_unique_words": total_unique,
-        "total_occurrences": total_occurrences,
-        "words": ranked_words
+        "total_unique_sin_words_found": len(sin_counter),
+        "total_sin_occurrences": total_sin_occurrences,
+        "sin_words": ranked_sins
     }
 
-    with open("word_library.json", "w", encoding="utf-8") as f:
-        json.dump(library_data, f, indent=2)
+    with open("sin_word_library.json", "w", encoding="utf-8") as f:
+        json.dump(sin_data, f, indent=2)
 
-    return library_data
+    return sin_data
 
-def load_word_library():
-    if os.path.exists("word_library.json"):
-        with open("word_library.json", "r", encoding="utf-8") as f:
+def load_sin_word_analysis():
+    if os.path.exists("sin_word_library.json"):
+        with open("sin_word_library.json", "r", encoding="utf-8") as f:
             return json.load(f)
     return None
 
@@ -285,28 +290,31 @@ if search_clicked:
         else:
             st.info("No matches found.")
 
-# ============ WORD LIBRARY SECTION ============
+# ============ SIN WORD FREQUENCY SECTION ============
 st.markdown("---")
-st.header("📚 Word Library")
+st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
-st.markdown("This library shows every word that appears in the italic text (Jesus’ words) across all messages, ranked from most to least frequent. Common English words (the, and, of, to, etc.) are excluded.")
+st.markdown("""
+This section shows how often **biblical sin-related words** appear in the italic text (Jesus’ direct words) across all messages.  
+Common English stopwords are already excluded. This is designed to help with self-examination.
+""")
 
-if st.button("🔄 Build / Refresh Word Library", type="secondary"):
-    with st.spinner("Building word library from all messages... This may take a minute."):
-        library = build_word_library()
-        st.success(f"Word library built successfully on {library['built_on']}")
+if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
+    with st.spinner("Scanning all messages for sin-related words..."):
+        sin_data = build_sin_word_analysis()
+        st.success(f"Sin word analysis updated on {sin_data['built_on']}")
 
-library = load_word_library()
+sin_data = load_sin_word_analysis()
 
-if library:
-    st.success(f"**Last built:** {library['built_on']}")
-    st.write(f"**Total unique words:** {library['total_unique_words']:,}")
-    st.write(f"**Total word occurrences (after removing stopwords):** {library['total_occurrences']:,}")
+if sin_data:
+    st.success(f"**Last updated:** {sin_data['built_on']}")
+    st.write(f"**Unique sin-related words found:** {sin_data['total_unique_sin_words_found']}")
+    st.write(f"**Total occurrences of sin-related words:** {sin_data['total_sin_occurrences']:,}")
 
     import pandas as pd
-    df = pd.DataFrame(library['words'])
+    df = pd.DataFrame(sin_data['sin_words'])
     st.dataframe(df, use_container_width=True, hide_index=True)
 else:
-    st.info("The word library has not been built yet. Click the button above to generate it from all messages.")
+    st.info("Click the button above to build the sin word analysis from all messages.")
 
 st.caption("Heartdwellers Search Tool — Built for the community")
