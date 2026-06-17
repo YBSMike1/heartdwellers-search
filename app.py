@@ -9,6 +9,7 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 from spellchecker import SpellChecker
+import json
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
@@ -50,7 +51,7 @@ st.markdown("""
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
-# ============ FULL SIN WORD LIST (Alphabetical Grid) ============
+# ============ FULL SIN WORD LIST ============
 SIN_WORDS = [
     "adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness",
     "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness",
@@ -64,6 +65,19 @@ SIN_WORDS = [
     "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness",
     "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"
 ]
+
+def get_sin_frequencies():
+    """Load sin frequencies from sin_word_library.json if available"""
+    freq = {}
+    if os.path.exists("sin_word_library.json"):
+        try:
+            with open("sin_word_library.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for item in data.get("sin_words", []):
+                    freq[item["Sin Word"]] = item["Frequency"]
+        except:
+            pass
+    return freq
 
 def get_word_definition(word):
     if not word or len(word) < 2: return "Please enter a valid word."
@@ -211,25 +225,52 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ NEW: ALPHABETICAL SIN GRID ============
+# ============ ALPHABETICAL SIN GRID WITH FREQUENCY COLOR CODING ============
 st.markdown("---")
 st.header("📖 Sin Wheel – Quick Browse (A–Z)")
 
-st.markdown("Click any sin word below to instantly search it.")
+st.markdown("Click any sin word below to instantly search it. Darker = more frequently mentioned.")
 
-# Sort alphabetically
+sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
 
-# Display in 5 columns
+# Create 5 columns
 cols = st.columns(5)
+
 for i, sin in enumerate(sorted_sins):
     with cols[i % 5]:
+        freq = sin_frequencies.get(sin, 0)
+        
+        # Calculate color intensity based on frequency
+        if freq > 0:
+            # Normalize frequency (adjust max if needed)
+            intensity = min(255, int(80 + (freq / 400) * 175))  # Higher freq = darker
+            button_color = f"rgba({intensity}, 69, 122, 0.95)"
+        else:
+            button_color = "rgba(180, 69, 122, 0.6)"  # Default lighter color
+
+        # Custom styled button
+        st.markdown(f"""
+            <style>
+            div[data-testid="stButton"] > button[kind="secondary"] {{
+                background-color: {button_color} !important;
+                color: white !important;
+                border: none !important;
+                border-radius: 10px !important;
+                font-weight: 600 !important;
+                font-size: 0.95rem !important;
+                padding: 10px 8px !important;
+                margin: 4px 0 !important;
+                width: 100% !important;
+            }}
+            </style>
+        """, unsafe_allow_html=True)
+
         if st.button(sin, key=f"sin_{sin}"):
-            # Auto-fill search and trigger search
             st.session_state["auto_search_word"] = sin
             st.rerun()
 
-# Auto-trigger search if a sin word was clicked
+# Auto-trigger search when a sin is clicked
 if "auto_search_word" in st.session_state:
     search_word = st.session_state.pop("auto_search_word")
     with st.spinner("Searching messages..."):
