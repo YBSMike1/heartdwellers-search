@@ -12,7 +12,7 @@ from spellchecker import SpellChecker
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# === SOFT ELEGANT THEME ===
+# === SOFT ELEGANT THEME (unchanged) ===
 st.markdown("""
 <style>
     .stApp { background-color: #1F1A24; }
@@ -167,15 +167,21 @@ if search_clicked:
             definition = get_word_definition(search_word)
             st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
 
-            # ========== DOWNLOAD BUTTON MOVED TO TOP ==========
+            # ========== OPTIMIZED DOCX GENERATION (moved to top) ==========
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+
             doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+
             for res in results:
+                # File name
                 doc.add_paragraph(res["file"], style='Heading 3')
-                p = doc.add_paragraph(res["text"])
-                for run in p.runs: run.italic = True
+                
+                # Result text - much faster way to make it italic
+                p = doc.add_paragraph()
+                run = p.add_run(res["text"])
+                run.italic = True
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
                 doc.save(tmp.name)
@@ -187,7 +193,7 @@ if search_clicked:
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
 
-            # ========== RESULTS LIST ==========
+            # Results list
             results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
             st.subheader("📋 Search Results")
 
@@ -198,14 +204,12 @@ if search_clicked:
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
 
-            # Bottom banner stays at the very end
             if os.path.exists("Bottom banner Std.png"):
                 col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
                 with col2:
                     st.image("Bottom banner Std.png", width=3400)
 
         else:
-            # Spelling suggestion (kept as-is)
             corrected = spell.correction(search_word.lower())
             if corrected and corrected != search_word.lower():
                 st.warning(f"No matches found for **'{search_word}'**.")
