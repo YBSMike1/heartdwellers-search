@@ -74,7 +74,7 @@ def extract_date_from_path(file_path):
     except: pass
     return datetime.min
 
-# ==================== UI ====================
+# ==================== CLEAN STABLE UI (pre-sin version) ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
@@ -98,7 +98,7 @@ with col_btn2:
             definition = get_word_definition(search_word)
             st.info(f"**📖 {search_word}:** {definition}")
 
-            # DOWNLOAD BUTTON NOW AT THE TOP OF RESULTS
+            # DOWNLOAD BUTTON AT THE TOP OF RESULTS
             doc = Document()
             for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
             doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
@@ -124,4 +124,4 @@ with col_btn2:
         else:
             st.warning("Please enter a word or phrase")
 
-st.caption("❤️ Download button now at the top of results • Full expanders restored • Clean stable version")
+st.caption("❤️ Restored to the exact working version before sin words were added • Results display fixed")
