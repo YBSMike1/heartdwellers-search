@@ -75,7 +75,7 @@ def extract_date_from_path(file_path):
     except: pass
     return datetime.min
 
-# ==================== UI ====================
+# ==================== CLEAN UI - PRE-SIN WORDS VERSION ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
@@ -122,4 +122,4 @@ with col_btn2:
         else:
             st.warning("Please enter a word or phrase")
 
-st.caption("❤️ Clean version prior to sin word section — results display is now fully restored")
+st.caption("❤️ Clean version before any sin word section was added — results display is now fully restored with expanders")
