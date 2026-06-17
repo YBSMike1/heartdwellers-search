@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 from spellchecker import SpellChecker
 import json
+import pandas as pd
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
@@ -150,7 +151,6 @@ def search_italic_text(search_word, folder_path):
     return results, file_count, match_count
 
 def build_sin_word_analysis():
-    """Basic version to build the sin frequency cache"""
     from collections import Counter
     sin_counter = Counter()
     all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER)
@@ -259,85 +259,55 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ ALPHABETICAL SIN GRID ============
+# ============ NEW: DATAFRAME TABLE + SELECTBOX ============
 st.markdown("---")
-st.header("📖 Sin Wheel – Quick Browse (A–Z)")
+st.header("📖 Browse Sins Alphabetically")
 
-st.markdown("Click any sin word below to instantly search it.")
-
-# Auto-build cache if missing
-if not os.path.exists("sin_word_library.json"):
-    with st.spinner("Building sin frequency cache for the first time..."):
-        try:
-            build_sin_word_analysis()
-            st.success("✅ Sin frequency cache built automatically.")
-        except:
-            st.warning("Could not build cache automatically.")
-
-# Manual refresh button
-if st.button("🔄 Build / Refresh Sin Frequency Cache", type="secondary"):
-    with st.spinner("Scanning all messages..."):
-        try:
-            build_sin_word_analysis()
-            st.success("✅ Sin frequency cache updated!")
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error: {e}")
+st.markdown("Select a sin word below to search it instantly.")
 
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
-max_freq = max(sin_frequencies.values()) if sin_frequencies else 450
 
-cols = st.columns(5)
+# Create DataFrame
+df_data = []
+max_freq = max(sin_frequencies.values()) if sin_frequencies else 1
 
-for i, sin in enumerate(sorted_sins):
-    with cols[i % 5]:
-        freq = sin_frequencies.get(sin, 0)
-        # Simple reliable color intensity
-        if freq > 0:
-            darkness = min(0.92, max(0.30, freq / max_freq))
-            r = int(196 + (55 * (1 - darkness)))
-            g = int(69 * darkness)
-            b = int(122 * darkness)
-            button_color = f"rgb({r}, {g}, {b})"
-        else:
-            button_color = "#3D2F45"
+for sin in sorted_sins:
+    freq = sin_frequencies.get(sin, 0)
+    percentage = round((freq / max_freq) * 100, 2) if max_freq > 0 else 0
+    df_data.append({
+        "Sin Word": sin,
+        "Frequency": freq,
+        "% of Mentions": percentage
+    })
 
-        st.markdown(f"""
-            <style>
-            button[data-testid="stButton"][key="sin_{sin}"] {{
-                background-color: {button_color} !important;
-                color: white !important;
-                border: 1px solid #E8A0B5 !important;
-                border-radius: 10px !important;
-                font-weight: 600 !important;
-                font-size: 0.95rem !important;
-                padding: 11px 8px !important;
-                margin: 4px 0 !important;
-                width: 100% !important;
-            }}
-            </style>
-        """, unsafe_allow_html=True)
+df = pd.DataFrame(df_data)
 
-        if st.button(sin, key=f"sin_{sin}"):
-            st.session_state["auto_search_word"] = sin
-            st.rerun()
+# Show the table
+st.dataframe(df, use_container_width=True, hide_index=True)
 
-# Auto search when sin word is clicked
-if "auto_search_word" in st.session_state:
-    search_word = st.session_state.pop("auto_search_word")
-    with st.spinner("Searching messages..."):
-        results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+# Selectbox
+selected_sin = st.selectbox(
+    "Choose a sin word to search:",
+    options=[""] + sorted_sins,
+    index=0,
+    key="sin_selectbox"
+)
+
+if selected_sin:
+    with st.spinner(f"Searching for '{selected_sin}'..."):
+        results, file_count, match_count = search_italic_text(selected_sin, DOCX_FOLDER)
 
     if results:
         st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-        definition = get_word_definition(search_word)
-        st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
+        definition = get_word_definition(selected_sin)
+        st.info(f"**📖 Dictionary Definition of '{selected_sin}':** {definition}")
 
+        # DOWNLOAD BUTTON AT TOP
         doc = Document()
         for section in doc.sections:
             section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-        doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+        doc.add_heading(f'What did Jesus teach us about "{selected_sin}"?', level=1)
         for res in results:
             doc.add_paragraph(res["file"], style='Heading 3')
             p = doc.add_paragraph(res["text"])
@@ -349,7 +319,7 @@ if "auto_search_word" in st.session_state:
                 st.download_button(
                     label="📥 Download Full Report (Word Document)",
                     data=f,
-                    file_name=f"Jesus speaks about {search_word}.docx",
+                    file_name=f"Jesus speaks about {selected_sin}.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 )
 
@@ -357,8 +327,8 @@ if "auto_search_word" in st.session_state:
         st.subheader("📋 Search Results")
 
         for res in results:
-            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', 
-                                 f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
+            highlighted = re.sub(rf'(?<!\w){re.escape(selected_sin)}(?!\w)', 
+                                 f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_sin}</span>', 
                                  res['text'], flags=re.IGNORECASE)
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
