@@ -149,6 +149,41 @@ def search_italic_text(search_word, folder_path):
     status_text.empty()
     return results, file_count, match_count
 
+def build_sin_word_analysis():
+    """Basic version to build the sin frequency cache"""
+    from collections import Counter
+    sin_counter = Counter()
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER)
+                 for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+    for file_path in all_files:
+        try:
+            doc = Document(file_path)
+            for p in doc.paragraphs:
+                italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+                if italic_text:
+                    words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
+                    for word in words:
+                        if word in SIN_WORDS:
+                            sin_counter[word] += 1
+        except:
+            continue
+
+    total = sum(sin_counter.values())
+    ranked = []
+    for rank, (word, freq) in enumerate(sin_counter.most_common(), 1):
+        percentage = (freq / total * 100) if total > 0 else 0
+        ranked.append({"Rank": rank, "Sin Word": word, "Frequency": freq, "% of Sin Mentions": round(percentage, 2)})
+
+    sin_data = {
+        "built_on": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "total_messages_scanned": len(all_files),
+        "total_sin_occurrences": total,
+        "sin_words": ranked
+    }
+    with open("sin_word_library.json", "w", encoding="utf-8") as f:
+        json.dump(sin_data, f, indent=2)
+    return sin_data
+
 # ============ UI ============
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
@@ -224,11 +259,30 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ ALPHABETICAL SIN GRID WITH BOTTOM-FILL SHADING ============
+# ============ ALPHABETICAL SIN GRID ============
 st.markdown("---")
 st.header("📖 Sin Wheel – Quick Browse (A–Z)")
 
-st.markdown("Click any sin word. The pink fill from the bottom shows how frequently it appears.")
+st.markdown("Click any sin word below to instantly search it.")
+
+# Auto-build cache if missing
+if not os.path.exists("sin_word_library.json"):
+    with st.spinner("Building sin frequency cache for the first time..."):
+        try:
+            build_sin_word_analysis()
+            st.success("✅ Sin frequency cache built automatically.")
+        except:
+            st.warning("Could not build cache automatically.")
+
+# Manual refresh button
+if st.button("🔄 Build / Refresh Sin Frequency Cache", type="secondary"):
+    with st.spinner("Scanning all messages..."):
+        try:
+            build_sin_word_analysis()
+            st.success("✅ Sin frequency cache updated!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Error: {e}")
 
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
@@ -238,14 +292,21 @@ cols = st.columns(5)
 
 for i, sin in enumerate(sorted_sins):
     with cols[i % 5]:
-        freq = sin_frequencies.get(sin, 1)
-        fill_percent = max(3, min(100, int((freq / max_freq) * 100)))
+        freq = sin_frequencies.get(sin, 0)
+        # Simple reliable color intensity
+        if freq > 0:
+            darkness = min(0.92, max(0.30, freq / max_freq))
+            r = int(196 + (55 * (1 - darkness)))
+            g = int(69 * darkness)
+            b = int(122 * darkness)
+            button_color = f"rgb({r}, {g}, {b})"
+        else:
+            button_color = "#3D2F45"
 
-        # Bottom-fill gradient button
         st.markdown(f"""
             <style>
             button[data-testid="stButton"][key="sin_{sin}"] {{
-                background: linear-gradient(to top, #C4457A {fill_percent}%, #322C40 {fill_percent}%) !important;
+                background-color: {button_color} !important;
                 color: white !important;
                 border: 1px solid #E8A0B5 !important;
                 border-radius: 10px !important;
@@ -262,7 +323,7 @@ for i, sin in enumerate(sorted_sins):
             st.session_state["auto_search_word"] = sin
             st.rerun()
 
-# Auto search when a sin word is clicked
+# Auto search when sin word is clicked
 if "auto_search_word" in st.session_state:
     search_word = st.session_state.pop("auto_search_word")
     with st.spinner("Searching messages..."):
