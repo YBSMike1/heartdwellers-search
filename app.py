@@ -18,28 +18,11 @@ st.markdown("""
     .main .block-container { background-color: #2A2533; border-radius: 20px; padding: 2rem; max-width: 1100px; }
     h1 { color: #C4457A; font-weight: 700; }
     .stTextInput input { background:#fff !important; color:#000 !important; border:2px solid #C4457A !important; font-size:1.1em; padding:14px; }
-    .stButton button {
-        background: linear-gradient(90deg, #9C1A5B, #E8A0B5) !important;
-        color: white !important;
-        border:none !important;
-        border-radius:8px !important;
-        font-size:1.2em !important;
-        font-weight:700 !important;
-        padding:5px 12px !important;
-        margin:4px !important;
-        width:auto !important;
-        min-width:auto !important;
-        display:inline-block !important;
-        box-shadow:0 3px 10px rgba(156,26,91,0.5);
-    }
-    .stButton button:hover { background: linear-gradient(90deg, #E8A0B5, #C4457A) !important; color:#1F1A24 !important; }
 </style>
 """, unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
 CACHE_FILE = "italic_index.json"
-
-SIN_KEYWORDS = {"pride","proud","lust","greed","envy","anger","gossip","offense","bitterness","idolatry","lying","stealing","gluttony","sloth","fear","strife","witchcraft","rebellion","hypocrisy","judging","complaining","selfishness","worldliness","drunkenness","hatred","revenge","stubbornness","blasphemy","deception","jealousy","wrath","doubt","unbelief","laziness","arrogance","haughty","fornication","adultery","slander","unforgiveness","idol","falsehood","idle","contention","sorcery","hypocrite","murmuring","selfish","worldly","drunk","hate","malice","vengeance","deceive","stubborn","blasphemous","covetous","fearful","rebellious","offended","bitter","unforgiving","materialism","jealous","lazy","idle","doubting","strife","division","discord","contention","occult","sorcery","hypocrisy","judgmental","murmuring","selfishness","worldliness","drunkenness","hatred","revenge","stubbornness","blasphemy"}
 
 def extract_italics(file_path):
     try:
@@ -92,23 +75,6 @@ def extract_date_from_path(file_path):
     except: pass
     return datetime.min
 
-def build_sin_word_analysis():
-    cache = load_cache() or build_italic_cache()
-    sin_counter = Counter()
-    for e in cache:
-        for w in re.findall(r'\b[a-zA-Z]+\b', e["italic_text"].lower()):
-            if w in SIN_KEYWORDS: sin_counter[w] += 1
-    total = sum(sin_counter.values())
-    ranked = [{"Rank": r+1, "Sin Word": w, "Frequency": f, "% of Sin Mentions": round(f/total*100, 2) if total else 0} for r, (w, f) in enumerate(sin_counter.most_common())]
-    sin_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(cache), "total_sin_occurrences": total, "sin_words": ranked}
-    with open("sin_word_library.json", "w") as f: json.dump(sin_data, f, indent=2)
-    return sin_data
-
-def load_sin_word_analysis():
-    if os.path.exists("sin_word_library.json"):
-        with open("sin_word_library.json") as f: return json.load(f)
-    return None
-
 # ==================== UI ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
@@ -156,34 +122,4 @@ with col_btn2:
         else:
             st.warning("Please enter a word or phrase")
 
-st.markdown("---")
-st.header("📖 Sin Word Frequency in Jesus’ Messages")
-if st.button("🔄 Build / Refresh Sin Analysis"):
-    sin_data = build_sin_word_analysis()
-    st.success("✅ Full analysis ready!")
-
-sin_data = load_sin_word_analysis()
-if sin_data:
-    st.success(f"Messages scanned: {sin_data['total_messages_scanned']} • Total sin occurrences: {sin_data['total_sin_occurrences']}")
-    tab1, tab2 = st.tabs(["🔥 Ranked by Frequency", "🔤 Alphabetical (All Words)"])
-    with tab1:
-        cols = st.columns(6)
-        for i, item in enumerate(sin_data['sin_words'][:36]):
-            with cols[i % 6]:
-                if st.button(f"{item['Rank']}. {item['Sin Word']} ({item['Frequency']})", key=f"rank_{i}"):
-                    st.session_state['search_word'] = item['Sin Word']
-                    st.session_state['auto_search'] = True
-                    st.rerun()
-    with tab2:
-        st.markdown("**All sin words — click the colored word to instantly search**")
-        all_sorted = sorted(sin_data['sin_words'], key=lambda x: x['Sin Word'])
-        cols = st.columns(3)
-        for i, item in enumerate(all_sorted):
-            with cols[i % 3]:
-                intensity = min(255, 70 + item['Frequency'] * 11)
-                color = f"rgba({intensity}, 69, 122, 0.98)"
-                label = f"**{item['Sin Word']}** ({item['Frequency']})"
-                if st.button(label, key=f"alpha_{i}"):
-                    st.session_state['search_word'] = item['Sin Word']
-                    st.session_state['auto_search'] = True
-                    st.rerun()
+st.caption("❤️ Clean version prior to sin word section — results display is now fully restored")
