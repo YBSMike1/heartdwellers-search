@@ -7,8 +7,6 @@ import tempfile
 import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import json
-from collections import Counter
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered", page_icon="❤️")
 
@@ -75,7 +73,7 @@ def extract_date_from_path(file_path):
     except: pass
     return datetime.min
 
-# ==================== CLEAN UI - PRE-SIN WORDS VERSION ====================
+# ==================== CLEAN UI ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
@@ -122,4 +120,4 @@ with col_btn2:
         else:
             st.warning("Please enter a word or phrase")
 
-st.caption("❤️ Clean version before any sin word section was added — results display is now fully restored with expanders")
+st.caption("❤️ Clean pre-sin-words version — results display fully restored")
