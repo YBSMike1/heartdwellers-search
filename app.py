@@ -7,6 +7,7 @@ import tempfile
 import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import json   # ← Fixed missing import
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered", page_icon="❤️")
 
@@ -46,7 +47,8 @@ def build_italic_cache():
 
 def load_cache():
     if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE) as f: return json.load(f)
+        with open(CACHE_FILE) as f: 
+            return json.load(f)
     return None
 
 def search_italic_text(search_word):
@@ -73,7 +75,7 @@ def extract_date_from_path(file_path):
     except: pass
     return datetime.min
 
-# ==================== CLEAN UI ====================
+# ==================== CLEAN UI (pre-sin version) ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
@@ -85,39 +87,37 @@ if os.path.exists("Newest banner.png"):
 if st.button("🚀 Build Fast Cache"):
     build_italic_cache()
 
-search_word = st.text_input("Search term", value=st.session_state.get("search_word", ""), placeholder="e.g. pride, love, rapture, faith, obedience, grace", label_visibility="collapsed")
+search_word = st.text_input("Search term", value=st.session_state.get("search_word", ""), placeholder="e.g. pride, love, rapture, faith", label_visibility="collapsed")
 
-col_btn1, col_btn2 = st.columns([4, 1.2])
-with col_btn2:
-    if st.button("🔍 Search", type="primary", use_container_width=True):
-        if search_word:
-            with st.spinner("Searching..."):
-                results, file_count, match_count = search_italic_text(search_word)
-            st.success(f"✅ Found {match_count:,} matches in {file_count:,} messages")
-            definition = get_word_definition(search_word)
-            st.info(f"**📖 {search_word}:** {definition}")
-            results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-            st.subheader("📋 Search Results (click to expand)")
-            for res in results:
-                highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background:#ffeb3b;color:black;font-weight:bold;">{search_word}</span>', res["italic_text"], flags=re.IGNORECASE)
-                with st.expander(f"📄 {res['file']}", expanded=True):
-                    st.markdown(f'<div style="background:#241F2E;padding:20px;border-left:6px solid #C4457A;border-radius:12px;color:#F5E6F0;">{highlighted}</div>', unsafe_allow_html=True)
-            doc = Document()
-            for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-            doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
-            for res in results:
-                doc.add_paragraph(res["file"], style='Heading 3')
-                p = doc.add_paragraph(res["italic_text"])
-                for run in p.runs: run.italic = True
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-                doc.save(tmp.name)
-                with open(tmp.name, "rb") as f:
-                    st.download_button("📥 Download Full Word Report", f, f"Jesus_on_{search_word}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-            if os.path.exists("Bottom banner Std.png"):
-                col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
-                with col2:
-                    st.image("Bottom banner Std.png", width=3400)
-        else:
-            st.warning("Please enter a word or phrase")
+if st.button("🔍 Search", type="primary"):
+    if search_word:
+        with st.spinner("Searching..."):
+            results, file_count, match_count = search_italic_text(search_word)
+        st.success(f"✅ Found {match_count:,} matches in {file_count:,} messages")
+        definition = get_word_definition(search_word)
+        st.info(f"**📖 {search_word}:** {definition}")
+        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+        st.subheader("📋 Search Results (click to expand)")
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background:#ffeb3b;color:black;font-weight:bold;">{search_word}</span>', res["italic_text"], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f'<div style="background:#241F2E;padding:20px;border-left:6px solid #C4457A;border-radius:12px;color:#F5E6F0;">{highlighted}</div>', unsafe_allow_html=True)
+        doc = Document()
+        for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+        for res in results:
+            doc.add_paragraph(res["file"], style='Heading 3')
+            p = doc.add_paragraph(res["italic_text"])
+            for run in p.runs: run.italic = True
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            doc.save(tmp.name)
+            with open(tmp.name, "rb") as f:
+                st.download_button("📥 Download Full Word Report", f, f"Jesus_on_{search_word}.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+        if os.path.exists("Bottom banner Std.png"):
+            col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
+            with col2:
+                st.image("Bottom banner Std.png", width=3400)
+    else:
+        st.warning("Please enter a word or phrase")
 
-st.caption("❤️ Clean pre-sin-words version — results display fully restored")
+st.caption("❤️ Clean version before any sin words were added — results display fully restored")
