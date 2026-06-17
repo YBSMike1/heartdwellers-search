@@ -110,7 +110,7 @@ def search_italic_text(search_word, folder_path):
     status_text = st.empty()
     start_time = time.time()
 
-    all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path) 
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path)
                  for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
     total_files = len(all_files)
 
@@ -139,7 +139,6 @@ def search_italic_text(search_word, folder_path):
     return results, file_count, match_count
 
 # ============ UI ============
-
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
@@ -167,14 +166,8 @@ if search_clicked:
             st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             definition = get_word_definition(search_word)
             st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
-            results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
 
-            st.subheader("📋 Search Results")
-            for res in results:
-                highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
-                with st.expander(f"📄 {res['file']}", expanded=True):
-                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
-
+            # ========== DOWNLOAD BUTTON MOVED TO TOP ==========
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -183,27 +176,44 @@ if search_clicked:
                 doc.add_paragraph(res["file"], style='Heading 3')
                 p = doc.add_paragraph(res["text"])
                 for run in p.runs: run.italic = True
+
             with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
                 doc.save(tmp.name)
                 with open(tmp.name, "rb") as f:
-                    st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {search_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    st.download_button(
+                        label="📥 Download Full Report (Word Document)",
+                        data=f,
+                        file_name=f"Jesus speaks about {search_word}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
 
+            # ========== RESULTS LIST ==========
+            results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+            st.subheader("📋 Search Results")
+
+            for res in results:
+                highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', 
+                                     f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', 
+                                     res['text'], flags=re.IGNORECASE)
+                with st.expander(f"📄 {res['file']}", expanded=True):
+                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0;">{highlighted}</div>""", unsafe_allow_html=True)
+
+            # Bottom banner stays at the very end
             if os.path.exists("Bottom banner Std.png"):
                 col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
                 with col2:
                     st.image("Bottom banner Std.png", width=3400)
+
         else:
-            # === SPELLING SUGGESTION ===
+            # Spelling suggestion (kept as-is)
             corrected = spell.correction(search_word.lower())
             if corrected and corrected != search_word.lower():
                 st.warning(f"No matches found for **'{search_word}'**.")
                 if st.button(f"🔍 Search for “{corrected}” instead", type="primary"):
-                    # Re-run search with corrected word
                     with st.spinner("Searching messages..."):
                         results, file_count, match_count = search_italic_text(corrected, DOCX_FOLDER)
                     if results:
                         st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-                        # ... (you can paste the same result display code here if you want)
             else:
                 st.info("No matches found.")
 
