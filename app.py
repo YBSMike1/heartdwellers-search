@@ -67,7 +67,7 @@ SIN_WORDS = [
 ]
 
 def get_sin_frequencies():
-    """Load sin frequencies from sin_word_library.json if available"""
+    """Load sin frequencies from sin_word_library.json"""
     freq = {}
     if os.path.exists("sin_word_library.json"):
         try:
@@ -225,43 +225,46 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ ALPHABETICAL SIN GRID WITH FREQUENCY COLOR CODING ============
+# ============ ALPHABETICAL SIN GRID WITH BOTTOM-FILL SHADING ============
 st.markdown("---")
 st.header("📖 Sin Wheel – Quick Browse (A–Z)")
 
-st.markdown("Click any sin word below to instantly search it. Darker = more frequently mentioned.")
+st.markdown("Click any sin word. The pink fill from the bottom shows how frequently it appears (higher = more filled).")
 
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
 
-# Create 5 columns
+# Find max frequency for scaling (fallback to 450 if not available)
+max_freq = max(sin_frequencies.values()) if sin_frequencies else 450
+
 cols = st.columns(5)
 
 for i, sin in enumerate(sorted_sins):
     with cols[i % 5]:
-        freq = sin_frequencies.get(sin, 0)
+        freq = sin_frequencies.get(sin, 1)
         
-        # Calculate color intensity based on frequency
-        if freq > 0:
-            # Normalize frequency (adjust max if needed)
-            intensity = min(255, int(80 + (freq / 400) * 175))  # Higher freq = darker
-            button_color = f"rgba({intensity}, 69, 122, 0.95)"
-        else:
-            button_color = "rgba(180, 69, 122, 0.6)"  # Default lighter color
+        # Calculate fill percentage (1 → ~0%, max_freq → 100%)
+        fill_percent = max(1, min(100, int((freq / max_freq) * 100)))
 
-        # Custom styled button
+        # Create gradient fill from the bottom
+        gradient = f"linear-gradient(to top, #C4457A {fill_percent}%, #2A2533 {fill_percent}%)"
+
         st.markdown(f"""
             <style>
-            div[data-testid="stButton"] > button[kind="secondary"] {{
-                background-color: {button_color} !important;
+            button[data-testid="stButton"][key="sin_{sin}"] {{
+                background: {gradient} !important;
                 color: white !important;
-                border: none !important;
+                border: 1px solid #E8A0B5 !important;
                 border-radius: 10px !important;
                 font-weight: 600 !important;
                 font-size: 0.95rem !important;
-                padding: 10px 8px !important;
+                padding: 12px 8px !important;
                 margin: 4px 0 !important;
                 width: 100% !important;
+                transition: transform 0.1s ease;
+            }}
+            button[data-testid="stButton"][key="sin_{sin}"]:hover {{
+                transform: scale(1.03);
             }}
             </style>
         """, unsafe_allow_html=True)
@@ -270,7 +273,7 @@ for i, sin in enumerate(sorted_sins):
             st.session_state["auto_search_word"] = sin
             st.rerun()
 
-# Auto-trigger search when a sin is clicked
+# Auto-trigger search when a sin word is clicked
 if "auto_search_word" in st.session_state:
     search_word = st.session_state.pop("auto_search_word")
     with st.spinner("Searching messages..."):
