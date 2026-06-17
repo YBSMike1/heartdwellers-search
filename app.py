@@ -96,7 +96,7 @@ def search_file(file_path, search_word):
     return None
 
 def run_search_in_background(search_word):
-    """Background thread function"""
+    """This runs in a background thread"""
     st.session_state.search_in_progress = True
     st.session_state.search_word = search_word
     st.session_state.search_results = []
@@ -147,19 +147,22 @@ with col2:
 
 # ============ START SEARCH ============
 if search_clicked and search_word:
-    # Clear previous results
+    # Clear previous state
+    st.session_state.search_in_progress = True
     st.session_state.search_results = None
-    st.session_state.search_in_progress = False
+    st.session_state.search_word = search_word
+    st.session_state.search_file_count = 0
+    st.session_state.search_match_count = 0
 
     # Start background thread
     thread = threading.Thread(target=run_search_in_background, args=(search_word,), daemon=True)
     thread.start()
 
-    # Give the thread a moment to start, then rerun
-    time.sleep(0.3)
+    # Small delay then rerun so the progress UI appears
+    time.sleep(0.4)
     st.rerun()
 
-# ============ SHOW PROGRESS ============
+# ============ SHOW PROGRESS WHILE SEARCHING ============
 if st.session_state.search_in_progress:
     st.info(f"🔍 Searching for **'{st.session_state.search_word}'** ...")
 
@@ -167,11 +170,11 @@ if st.session_state.search_in_progress:
     st.progress(progress_value)
 
     st.markdown(f"""
-    **Files processed:** {st.session_state.search_file_count:,} / ~1,407  
-    **Matches found:** {st.session_state.search_match_count:,}
+    **Files processed:** {st.session_state.search_file_count:,}  
+    **Matches found so far:** {st.session_state.search_match_count:,}
     """)
 
-    time.sleep(0.6)
+    time.sleep(0.7)
     st.rerun()
 
 # ============ SHOW RESULTS ============
@@ -206,7 +209,7 @@ elif st.session_state.search_results is not None:
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 )
 
-        # Results list
+        # Results
         results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
         st.subheader("📋 Search Results")
 
