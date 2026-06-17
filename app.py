@@ -244,18 +244,29 @@ if os.path.exists("Newest banner.png"):
 
 st.markdown("### Enter a word or phrase")
 
+# Search input that reads from session_state
+search_word = st.text_input(
+    "Search term",
+    value=st.session_state.get("search_word", ""),
+    placeholder="e.g. rapture, love, faith (typos ok)",
+    label_visibility="collapsed"
+)
+
 col1, col2 = st.columns([4, 1.2])
-with col1:
-    search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-if search_clicked:
+if search_clicked or st.session_state.get("auto_search", False):
     if not search_word:
         st.warning("Please enter a word or phrase.")
     else:
         with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+        
+        # Clear auto_search flag after use
+        if "auto_search" in st.session_state:
+            del st.session_state["auto_search"]
+        
         if results:
             st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             definition = get_word_definition(search_word)
@@ -294,7 +305,7 @@ st.header("📖 Sin Word Frequency in Jesus’ Messages")
 
 st.markdown("""
 This section shows how often **biblical sin-related words** appear in Jesus’ direct words (italic text).  
-Click any word below to automatically search for it.
+**Click any word below** to automatically search for it.
 """)
 
 if st.button("🔄 Build / Refresh Sin Word Analysis", type="secondary"):
@@ -311,16 +322,16 @@ if sin_data:
 
     # === CLICKABLE SIN WORDS ===
     if sin_data['sin_words']:
-        st.markdown("**Quick Search by Sin Word:**")
+        st.markdown("**Click a word to search:**")
         cols = st.columns(6)
-        for i, item in enumerate(sin_data['sin_words'][:24]):  # Show top 24
+        for i, item in enumerate(sin_data['sin_words'][:30]):  # Show top 30
             with cols[i % 6]:
                 if st.button(item['Sin Word'], key=f"sin_{i}"):
-                    # Set the search term and trigger search
                     st.session_state['search_word'] = item['Sin Word']
+                    st.session_state['auto_search'] = True
                     st.rerun()
 
-    # Show full table
+    # Full table
     import pandas as pd
     df = pd.DataFrame(sin_data['sin_words'])
     st.dataframe(df, use_container_width=True, hide_index=True)
