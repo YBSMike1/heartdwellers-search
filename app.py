@@ -8,7 +8,8 @@ import requests
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
-from spellchecker import SpellChecker
+import json
+from collections import Counter
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
@@ -64,7 +65,29 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
-spell = SpellChecker()
+
+# Common English stopwords (excluded from word library)
+STOPWORDS = {
+    "a", "an", "the", "and", "or", "but", "if", "because", "as", "until", "while",
+    "of", "at", "by", "for", "with", "about", "against", "between", "into", "through",
+    "during", "before", "after", "above", "below", "to", "from", "up", "down", "in",
+    "out", "on", "off", "over", "under", "again", "further", "then", "once", "here",
+    "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more",
+    "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so",
+    "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now",
+    "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours",
+    "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers",
+    "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves",
+    "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are",
+    "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does",
+    "did", "doing", "would", "could", "ought", "i'm", "you're", "he's", "she's", "it's",
+    "we're", "they're", "i've", "you've", "we've", "they've", "i'd", "you'd", "he'd",
+    "she'd", "we'd", "they'd", "i'll", "you'll", "he'll", "she'll", "we'll", "they'll",
+    "isn't", "aren't", "wasn't", "weren't", "hasn't", "haven't", "hadn't", "doesn't",
+    "don't", "didn't", "won't", "wouldn't", "shan't", "shouldn't", "can't", "cannot",
+    "couldn't", "mustn't", "let's", "that's", "who's", "what's", "here's", "there's",
+    "when's", "where's", "why's", "how's"
+}
 
 def get_word_definition(word):
     if not word or len(word) < 2: return "Please enter a valid word."
@@ -138,6 +161,74 @@ def search_italic_text(search_word, folder_path):
     status_text.empty()
     return results, file_count, match_count
 
+# ============ WORD LIBRARY FUNCTIONS ============
+
+def build_word_library():
+    """Scans all messages and builds a word frequency library (excluding stopwords)"""
+    word_counter = Counter()
+    total_files = 0
+    processed = 0
+
+    progress_bar = st.progress(0)
+    status = st.empty()
+
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) 
+                 for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+    total_files = len(all_files)
+
+    for file_path in all_files:
+        processed += 1
+        progress_bar.progress(processed / total_files)
+        status.text(f"Processing: {os.path.basename(file_path)} ({processed}/{total_files})")
+
+        try:
+            doc = Document(file_path)
+            for p in doc.paragraphs:
+                italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+                if italic_text:
+                    # Clean and split into words
+                    words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
+                    for word in words:
+                        if word not in STOPWORDS and len(word) > 1:
+                            word_counter[word] += 1
+        except:
+            continue
+
+    progress_bar.empty()
+    status.empty()
+
+    total_occurrences = sum(word_counter.values())
+    total_unique = len(word_counter)
+
+    # Build ranked list
+    ranked_words = []
+    for rank, (word, freq) in enumerate(word_counter.most_common(), 1):
+        percentage = (freq / total_occurrences * 100) if total_occurrences > 0 else 0
+        ranked_words.append({
+            "Rank": rank,
+            "Word": word,
+            "Frequency": freq,
+            "% of Total": round(percentage, 2)
+        })
+
+    library_data = {
+        "built_on": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "total_unique_words": total_unique,
+        "total_occurrences": total_occurrences,
+        "words": ranked_words
+    }
+
+    with open("word_library.json", "w", encoding="utf-8") as f:
+        json.dump(library_data, f, indent=2)
+
+    return library_data
+
+def load_word_library():
+    if os.path.exists("word_library.json"):
+        with open("word_library.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    return None
+
 # ============ UI ============
 
 st.title("❤️ Heartdwellers Search Tool")
@@ -162,7 +253,6 @@ if search_clicked:
     else:
         with st.spinner("Searching messages..."):
             results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
-
         if results:
             st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
             definition = get_word_definition(search_word)
@@ -193,18 +283,30 @@ if search_clicked:
                 with col2:
                     st.image("Bottom banner Std.png", width=3400)
         else:
-            # === SPELLING SUGGESTION ===
-            corrected = spell.correction(search_word.lower())
-            if corrected and corrected != search_word.lower():
-                st.warning(f"No matches found for **'{search_word}'**.")
-                if st.button(f"🔍 Search for “{corrected}” instead", type="primary"):
-                    # Re-run search with corrected word
-                    with st.spinner("Searching messages..."):
-                        results, file_count, match_count = search_italic_text(corrected, DOCX_FOLDER)
-                    if results:
-                        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-                        # ... (you can paste the same result display code here if you want)
-            else:
-                st.info("No matches found.")
+            st.info("No matches found.")
+
+# ============ WORD LIBRARY SECTION ============
+st.markdown("---")
+st.header("📚 Word Library")
+
+st.markdown("This library shows every word that appears in the italic text (Jesus’ words) across all messages, ranked from most to least frequent. Common English words (the, and, of, to, etc.) are excluded.")
+
+if st.button("🔄 Build / Refresh Word Library", type="secondary"):
+    with st.spinner("Building word library from all messages... This may take a minute."):
+        library = build_word_library()
+        st.success(f"Word library built successfully on {library['built_on']}")
+
+library = load_word_library()
+
+if library:
+    st.success(f"**Last built:** {library['built_on']}")
+    st.write(f"**Total unique words:** {library['total_unique_words']:,}")
+    st.write(f"**Total word occurrences (after removing stopwords):** {library['total_occurrences']:,}")
+
+    import pandas as pd
+    df = pd.DataFrame(library['words'])
+    st.dataframe(df, use_container_width=True, hide_index=True)
+else:
+    st.info("The word library has not been built yet. Click the button above to generate it from all messages.")
 
 st.caption("Heartdwellers Search Tool — Built for the community")
