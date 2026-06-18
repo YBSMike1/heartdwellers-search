@@ -14,55 +14,27 @@ import pandas as pd
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered", page_icon="❤️")
 
-# ============ NIGHT / DAY TOGGLE ============
-col1, col2 = st.columns([6, 1])
-with col2:
-    dark_mode = st.toggle("🌙 Night", value=True, key="theme_toggle")
+# ============ DARK THEME (No Toggle) ============
+st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+    .stApp { background: linear-gradient(135deg, #1F1A24 0%, #2A1F35 100%); }
+    .main .block-container { background: rgba(42, 37, 51, 0.92) !important; backdrop-filter: blur(22px); border-radius: 28px; padding: 2.8rem 2.2rem; }
 
-# ============ THEME CSS (Outline Removed) ============
-if dark_mode:
-    st.markdown("""
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        .stApp { background: linear-gradient(135deg, #1F1A24 0%, #2A1F35 100%); }
-        .main .block-container { background: rgba(42, 37, 51, 0.92) !important; backdrop-filter: blur(22px); border-radius: 28px; padding: 2.8rem 2.2rem; }
-
-        .fancy-header, .fancy-white {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.52rem;
-            font-weight: 700;
-            text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
-            background: rgba(0,0,0,0.65);
-            padding: 8px 22px;
-            border-radius: 12px;
-            display: inline-block;
-        }
-        .fancy-header { color: #E91E63; }
-        .fancy-white { color: #ffffff; margin-bottom: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        .stApp { background: linear-gradient(135deg, #f8f1f5 0%, #f0e6ed 100%); }
-        .main .block-container { background: #ffffff !important; border-radius: 28px; padding: 2.8rem 2.2rem; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-
-        .fancy-header, .fancy-white {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.52rem;
-            font-weight: 700;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-            background: #ffffff;
-            padding: 8px 22px;
-            border-radius: 12px;
-            display: inline-block;
-            border: 1px solid #f0d0e0;
-        }
-        .fancy-header { color: #C4457A; }
-        .fancy-white { color: #2d2a33; margin-bottom: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
+    .fancy-header, .fancy-white {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.52rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
+        background: rgba(0,0,0,0.65);
+        padding: 8px 22px;
+        border-radius: 12px;
+        display: inline-block;
+    }
+    .fancy-header { color: #E91E63; }
+    .fancy-white { color: #ffffff; margin-bottom: 10px; }
+</style>
+""", unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
@@ -200,7 +172,6 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# Now exactly the same style as the headers below (no outline)
 st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
