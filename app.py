@@ -281,11 +281,11 @@ for sin in sorted_sins:
 
 df = pd.DataFrame(df_data)
 
-# Progress bar column (see-through style)
+# Progress bar column with updated header
 column_config = {
     "Frequency": st.column_config.ProgressColumn(
-        "Frequency",
-        help="How often this sin appears in the messages (0 to max)",
+        "Frequency of usage in all messages",
+        help="How often this sin appears across all messages",
         min_value=0,
         max_value=max_freq,
         format="%d",
