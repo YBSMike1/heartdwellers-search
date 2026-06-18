@@ -295,17 +295,20 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# ============ IMPROVED HEADING (Georgia + Better 3D Shadow) ============
+# ============ FANCY FONT + STRONGER 3D SHADOW ============
 st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+
 <div style="
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.52rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.55rem;
     font-weight: 700;
     color: #C4457A;
     text-shadow: 
-        0 2px 4px rgba(0,0,0,0.22),
-        0 4px 8px rgba(196, 69, 122, 0.15);
-    letter-spacing: -0.25px;
+        0 4px 8px rgba(0,0,0,0.32),
+        0 8px 16px rgba(196, 69, 122, 0.26),
+        2px 3px 5px rgba(0,0,0,0.22);
+    letter-spacing: -0.4px;
     margin-bottom: 0.4rem;
     line-height: 1.3;
 ">
