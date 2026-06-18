@@ -24,6 +24,7 @@ st.markdown("""
         font-size: 1.52rem;
         font-weight: 700;
         color: #E91E63;
+        -webkit-text-stroke: 1.8px #FFD700;
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
         padding: 8px 22px;
@@ -35,6 +36,7 @@ st.markdown("""
         font-size: 1.58rem;
         font-weight: 700;
         color: #ffffff;
+        -webkit-text-stroke: 1.8px #FFD700;
         text-shadow: 2px 2px 5px #000000, 0 0 18px #ffffff;
         background: rgba(0,0,0,0.72);
         padding: 10px 26px;
@@ -180,7 +182,6 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# === MAIN INSTRUCTION - Now exactly same style as the other headers, but white ===
 st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
