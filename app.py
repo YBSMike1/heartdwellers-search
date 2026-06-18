@@ -25,7 +25,7 @@ st.markdown("""
         font-size: 1.52rem;
         font-weight: 700;
         color: #E91E63;
-        -webkit-text-stroke: 1.8px #FFD700;
+        -webkit-text-stroke: 0.5px #C9A227;   /* 75% thinner + 25% darker gold */
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
         padding: 8px 22px;
@@ -33,13 +33,12 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* EXACT same size, font, padding, outline, and effects as the headers above — only color changed to white */
     .fancy-white {
         font-family: 'Playfair Display', serif;
         font-size: 1.52rem;
         font-weight: 700;
         color: #ffffff;
-        -webkit-text-stroke: 1.8px #FFD700;
+        -webkit-text-stroke: 0.5px #C9A227;   /* 75% thinner + 25% darker gold */
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
         padding: 8px 22px;
@@ -185,7 +184,6 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# Now exactly the same size, font, padding, outline, and effects as the Browse headers (only color is white)
 st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
@@ -300,4 +298,4 @@ st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
-st.caption("❤️ Built with love for the Heartdwellers family")
+st.caption("❤️ Built by Mike F. with love for our Heartdwellers family")
