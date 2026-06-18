@@ -233,7 +233,7 @@ def build_grace_word_analysis():
 
     total = sum(grace_counter.values())
     ranked = []
-    for rank, (word, freq) in enumerate(grace_counter.most_common(), 1):   # ← FIXED: changed "on" to "in"
+    for rank, (word, freq) in enumerate(grace_counter.most_common(), 1):
         percentage = (freq / total * 100) if total > 0 else 0
         ranked.append({"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round(percentage, 2)})
 
@@ -304,22 +304,6 @@ if search_clicked:
                                      res['text'], flags=re.IGNORECASE)
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
-
-            if os.path.exists("Bottom banner Std.png"):
-                col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
-                with col2:
-                    st.image("Bottom banner Std.png", width=3400)
-        else:
-            corrected = spell.correction(search_word.lower())
-            if corrected and corrected != search_word.lower():
-                st.warning(f"No matches found for **'{search_word}'**.")
-                if st.button(f"🔍 Search for “{corrected}” instead", type="primary"):
-                    with st.spinner("Searching messages..."):
-                        results, file_count, match_count = search_italic_text(corrected, DOCX_FOLDER)
-                    if results:
-                        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-            else:
-                st.info("No matches found.")
 
 # ============ GRACE TABLE (Now on top) ============
 st.markdown("---")
@@ -492,5 +476,12 @@ if sin_event.selection.rows:
                                  res['text'], flags=re.IGNORECASE)
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+
+# ============ BOTTOM BANNER (ALWAYS VISIBLE AT VERY BOTTOM) ============
+st.markdown("---")
+if os.path.exists("Bottom banner Std.png"):
+    col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
+    with col2:
+        st.image("Bottom banner Std.png", width=3400)
 
 st.caption("Heartdwellers Search Tool — Built for the community")
