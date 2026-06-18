@@ -14,40 +14,87 @@ import pandas as pd
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# === SOFT ELEGANT THEME ===
-st.markdown("""
-<style>
-    .stApp { background-color: #1F1A24; }
-    .main .block-container {
-        background-color: #2A2533;
-        border-radius: 20px;
-        padding: 2.5rem 2rem;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-        max-width: 1100px;
-    }
-    h1 { color: #C4457A; font-weight: 700; letter-spacing: -0.5px; }
-    .stTextInput input {
-        background-color: #ffffff !important;
-        color: #1F1A24 !important;
-        border: 2px solid #C4457A !important;
-        border-radius: 14px !important;
-        font-size: 1.1rem !important;
-        padding: 14px 18px !important;
-        font-weight: 500;
-    }
-    .stButton button[kind="primary"] {
-        background-color: #C4457A !important;
-        color: white !important;
-        border: 2px solid #E8A0B5 !important;
-        border-radius: 50px !important;
-        font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        padding: 0.75rem 2.2rem !important;
-        min-height: 3.4rem !important;
-        box-shadow: 0 6px 20px rgba(196, 69, 122, 0.35) !important;
-    }
-</style>
-""", unsafe_allow_html=True)
+# ============ THEME TOGGLE ============
+col1, col2 = st.columns([6, 1])
+with col2:
+    dark_mode = st.toggle("🌙", value=True, key="dark_mode_toggle", help="Toggle between Dark and Light mode")
+
+# ============ DYNAMIC THEME CSS ============
+if dark_mode:
+    # DARK ELEGANT THEME (current)
+    theme_css = """
+    <style>
+        .stApp { background-color: #1F1A24; }
+        .main .block-container {
+            background-color: #2A2533;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+            max-width: 1100px;
+        }
+        h1 { color: #C4457A; font-weight: 700; letter-spacing: -0.5px; }
+        .stTextInput input {
+            background-color: #ffffff !important;
+            color: #1F1A24 !important;
+            border: 2px solid #C4457A !important;
+            border-radius: 14px !important;
+            font-size: 1.1rem !important;
+            padding: 14px 18px !important;
+            font-weight: 500;
+        }
+        .stButton button[kind="primary"] {
+            background-color: #C4457A !important;
+            color: white !important;
+            border: 2px solid #E8A0B5 !important;
+            border-radius: 50px !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            padding: 0.75rem 2.2rem !important;
+            min-height: 3.4rem !important;
+            box-shadow: 0 6px 20px rgba(196, 69, 122, 0.35) !important;
+        }
+    </style>
+    """
+else:
+    # LIGHT CLEAN THEME
+    theme_css = """
+    <style>
+        .stApp { background-color: #f8f1f5; }
+        .main .block-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            max-width: 1100px;
+            color: #2d2a33;
+        }
+        h1 { color: #C4457A; font-weight: 700; letter-spacing: -0.5px; }
+        .stTextInput input {
+            background-color: #ffffff !important;
+            color: #2d2a33 !important;
+            border: 2px solid #C4457A !important;
+            border-radius: 14px !important;
+            font-size: 1.1rem !important;
+            padding: 14px 18px !important;
+            font-weight: 500;
+        }
+        .stButton button[kind="primary"] {
+            background-color: #C4457A !important;
+            color: white !important;
+            border: 2px solid #E8A0B5 !important;
+            border-radius: 50px !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            padding: 0.75rem 2.2rem !important;
+            min-height: 3.4rem !important;
+        }
+        .stMarkdown, .stText, label {
+            color: #2d2a33 !important;
+        }
+    </style>
+    """
+
+st.markdown(theme_css, unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
@@ -83,6 +130,9 @@ GRACE_WORDS = [
     "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy",
     "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"
 ]
+
+# ... (all the rest of the functions: get_sin_frequencies, get_grace_frequencies, 
+# search_italic_text, build_sin_word_analysis, build_grace_word_analysis, etc. remain exactly the same)
 
 def get_sin_frequencies():
     freq = {}
