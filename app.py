@@ -322,11 +322,11 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ SIN TABLE ============
+# ============ SIN TABLE (Sorted Most → Least Used) ============
 st.markdown("---")
-st.header("📖 Browse Sins Alphabetically")
+st.header("📖 Browse Sins Alphabetically (Most Used First)")
 
-st.markdown("Select a sin word below to search it instantly.")
+st.markdown("**Click any word in the table below to search it instantly.**")
 
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
@@ -339,6 +339,7 @@ for sin in sorted_sins:
     df_data_sin.append({"Sin Word": sin, "Frequency": freq})
 
 df_sin = pd.DataFrame(df_data_sin)
+df_sin = df_sin.sort_values("Frequency", ascending=False)   # ← Most used first
 
 column_config_sin = {
     "Frequency": st.column_config.ProgressColumn(
@@ -350,16 +351,20 @@ column_config_sin = {
     )
 }
 
-st.dataframe(df_sin, column_config=column_config_sin, use_container_width=True, hide_index=True)
-
-selected_sin = st.selectbox(
-    "Choose a sin word to search:",
-    options=[""] + sorted_sins,
-    index=0,
-    key="sin_selectbox"
+sin_event = st.dataframe(
+    df_sin,
+    column_config=column_config_sin,
+    use_container_width=True,
+    hide_index=True,
+    on_select="rerun",
+    selection_mode="single-row"
 )
 
-if selected_sin:
+# Handle click on Sin table
+if sin_event.selection.rows:
+    selected_row = sin_event.selection.rows[0]
+    selected_sin = df_sin.iloc[selected_row]["Sin Word"]
+
     with st.spinner(f"Searching for '{selected_sin}'..."):
         results, file_count, match_count = search_italic_text(selected_sin, DOCX_FOLDER)
 
@@ -397,13 +402,13 @@ if selected_sin:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ GRACE / POSITIVE TABLE ============
+# ============ GRACE TABLE (Sorted Most → Least Used) ============
 st.markdown("---")
-st.header("✨ Grace Wheel – Positive Words & Virtues")
+st.header("✨ Grace Wheel – Positive Words & Virtues (Most Used First)")
 
-st.markdown("Select a grace word below to search it instantly.")
+st.markdown("**Click any word in the table below to search it instantly.**")
 
-# === AUTO BUILD GRACE CACHE IF MISSING ===
+# Auto-build + manual refresh button for Grace cache
 if not os.path.exists("grace_word_library.json"):
     with st.spinner("Building grace frequency cache for the first time..."):
         try:
@@ -412,7 +417,6 @@ if not os.path.exists("grace_word_library.json"):
         except Exception as e:
             st.warning(f"Could not build grace cache automatically: {e}")
 
-# === MANUAL REFRESH BUTTON FOR GRACE ===
 if st.button("🔄 Build / Refresh Grace Frequency Cache", key="build_grace_cache"):
     with st.spinner("Scanning all messages for grace words..."):
         try:
@@ -433,6 +437,7 @@ for word in sorted_graces:
     df_data_grace.append({"Grace Word": word, "Frequency": freq})
 
 df_grace = pd.DataFrame(df_data_grace)
+df_grace = df_grace.sort_values("Frequency", ascending=False)   # ← Most used first
 
 column_config_grace = {
     "Frequency": st.column_config.ProgressColumn(
@@ -444,16 +449,20 @@ column_config_grace = {
     )
 }
 
-st.dataframe(df_grace, column_config=column_config_grace, use_container_width=True, hide_index=True)
-
-selected_grace = st.selectbox(
-    "Choose a grace word to search:",
-    options=[""] + sorted_graces,
-    index=0,
-    key="grace_selectbox"
+grace_event = st.dataframe(
+    df_grace,
+    column_config=column_config_grace,
+    use_container_width=True,
+    hide_index=True,
+    on_select="rerun",
+    selection_mode="single-row"
 )
 
-if selected_grace:
+# Handle click on Grace table
+if grace_event.selection.rows:
+    selected_row = grace_event.selection.rows[0]
+    selected_grace = df_grace.iloc[selected_row]["Grace Word"]
+
     with st.spinner(f"Searching for '{selected_grace}'..."):
         results, file_count, match_count = search_italic_text(selected_grace, DOCX_FOLDER)
 
