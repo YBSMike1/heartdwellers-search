@@ -19,9 +19,8 @@ col1, col2 = st.columns([6, 1])
 with col2:
     dark_mode = st.toggle("🌙", value=True, key="dark_mode_toggle", help="Toggle Dark / Light mode")
 
-# ============ DYNAMIC THEME (with fixed visibility) ============
+# ============ DYNAMIC THEME ============
 if dark_mode:
-    # DARK ELEGANT THEME
     st.markdown("""
     <style>
         .stApp { background-color: #1F1A24; }
@@ -55,7 +54,6 @@ if dark_mode:
     </style>
     """, unsafe_allow_html=True)
 else:
-    # LIGHT MODE (fixed for readability)
     st.markdown("""
     <style>
         .stApp { background-color: #f8f1f5; }
@@ -66,10 +64,7 @@ else:
             box-shadow: 0 8px 30px rgba(0,0,0,0.08);
             max-width: 1100px;
         }
-        h1, h2, h3, h4, h5, h6 { 
-            color: #C4457A !important; 
-            font-weight: 700;
-        }
+        h1, h2, h3, h4, h5, h6 { color: #C4457A !important; font-weight: 700; }
         .stMarkdown, .stText, p, span, label, div {
             color: #2d2a33 !important;
         }
@@ -297,7 +292,6 @@ def build_grace_word_analysis():
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
-# === TOP BANNER (Wider) ===
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
@@ -350,11 +344,11 @@ if search_clicked:
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ GRACE TABLE (On Top) ============
+# ============ GRACE TABLE ============
 st.markdown("---")
 st.header("✨ Browse Graces Alphabetically (Most Used First)")
 
-st.markdown("**Click any word in the table below to search it instantly.**")
+st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 
 if not os.path.exists("grace_word_library.json"):
     st.markdown(
@@ -443,11 +437,11 @@ if grace_event.selection.rows:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ SIN TABLE (Below Grace) ============
+# ============ SIN TABLE ============
 st.markdown("---")
 st.header("📖 Browse Sins Alphabetically (Most Used First)")
 
-st.markdown("**Click any word in the table below to search it instantly.**")
+st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
@@ -522,7 +516,7 @@ if sin_event.selection.rows:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ BOTTOM BANNER (ALWAYS VISIBLE + WIDER) ============
+# ============ BOTTOM BANNER ============
 st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
