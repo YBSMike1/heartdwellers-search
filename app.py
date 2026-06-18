@@ -36,7 +36,6 @@ st.markdown("""
     .stProgress > div > div > div { background: linear-gradient(90deg, #9C27B0, #E91E63) !important; animation: flow 1.8s linear infinite; }
     @keyframes flow { 0% {background-position:0% 50%} 100% {background-position:200% 50%} }
     ::-webkit-scrollbar-thumb { background: linear-gradient(#9C27B0, #E91E63); }
-    .purple { color: #9C27B0 !important; text-shadow: 0 4px 12px rgba(156,39,176,0.6); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -169,15 +168,18 @@ def build_grace_word_analysis():
     with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
     return grace_data
 
-# ==================== UI ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
+# ==== GRADIENT TEXT: Purple → White (left to right) ====
 st.markdown("""
-<div class="purple" style="font-size:1.55rem;font-weight:700;text-shadow:0 4px 12px rgba(156,39,176,0.6);">
+<div style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 40%, #ffffff 100%); 
+           -webkit-background-clip: text; 
+           -webkit-text-fill-color: transparent;
+           font-size: 1.58rem; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 0.5rem;">
     Enter a word or phrase here or select from Graces or Sins listed Below
 </div>
 """, unsafe_allow_html=True)
@@ -212,7 +214,7 @@ if search_clicked and search_word:
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown('<h3 class="purple">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 if not os.path.exists("grace_word_library.json"):
     st.markdown("⏳ **Building the Grace frequency cache for the first time.**<br>This runs automatically because new messages are added often. It only needs to happen once — future visits will load instantly.", unsafe_allow_html=True)
@@ -253,7 +255,7 @@ if grace_event.selection.rows:
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown('<h3 class="purple">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0, #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
