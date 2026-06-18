@@ -274,7 +274,7 @@ def build_grace_word_analysis():
 
     total = sum(grace_counter.values())
     ranked = []
-    for rank, (word, freq) on enumerate(grace_counter.most_common(), 1):
+    for rank, (word, freq) in enumerate(grace_counter.most_common(), 1):   # ← FIXED: changed "on" to "in"
         percentage = (freq / total * 100) if total > 0 else 0
         ranked.append({"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round(percentage, 2)})
 
