@@ -18,28 +18,29 @@ st.markdown("""
 <style>
     :root { --primary: #9C27B0; --accent: #E91E63; }
     .stApp { background: linear-gradient(135deg, #1F1A24 0%, #2A1F35 100%); }
-    .main .block-container {
-        background: rgba(42, 37, 51, 0.78) !important;
-        backdrop-filter: blur(22px);
-        border: 1px solid rgba(156, 39, 176, 0.35);
-        border-radius: 28px;
-        padding: 2.8rem 2.2rem;
-        box-shadow: 0 25px 70px rgba(0,0,0,0.65);
+    .main .block-container { background: rgba(42, 37, 51, 0.85) !important; backdrop-filter: blur(22px); border-radius: 28px; padding: 2.8rem 2.2rem; box-shadow: 0 25px 70px rgba(0,0,0,0.65); }
+    .gradient-text {
+        background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        text-shadow: 3px 3px 8px #000000, 0 0 20px #ffffff, 0 0 30px #E91E63;
+        padding: 8px 20px;
+        border-radius: 12px;
+        display: inline-block;
+        margin-bottom: 8px;
     }
     .stTextInput input { background: rgba(255,255,255,0.95) !important; color: #1F1A24 !important; border: 2px solid var(--primary) !important; border-radius: 16px !important; }
-    .stTextInput input:focus { transform: scale(1.03); box-shadow: 0 10px 30px rgba(156,39,176,0.5); }
-    .stButton button[kind="primary"] { background: linear-gradient(90deg, var(--primary), var(--accent)) !important; border-radius: 50px !important; transition: all 0.3s; }
-    .stButton button[kind="primary"]:hover { transform: translateY(-4px) scale(1.06); box-shadow: 0 15px 35px rgba(233,30,99,0.6); }
-    .stDataFrame { background: rgba(255,255,255,0.12) !important; backdrop-filter: blur(15px); border-radius: 18px; border: 1px solid rgba(156,39,176,0.4); }
-    .stExpander:hover { box-shadow: 0 0 30px rgba(156,39,176,0.7); transform: translateY(-3px); }
-    .stProgress > div > div > div { background: linear-gradient(90deg, #9C27B0, #E91E63) !important; animation: flow 1.8s linear infinite; }
-    @keyframes flow { 0% {background-position:0% 50%} 100% {background-position:200% 50%} }
-    ::-webkit-scrollbar-thumb { background: linear-gradient(#9C27B0, #E91E63); }
+    .stButton button[kind="primary"] { background: linear-gradient(90deg, var(--primary), var(--accent)) !important; border-radius: 50px !important; }
+    .stButton button[kind="primary"]:hover { transform: translateY(-4px) scale(1.06); }
+    .stDataFrame { background: rgba(255,255,255,0.12) !important; backdrop-filter: blur(15px); border-radius: 18px; }
 </style>
 """, unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
+
+# (All SIN_WORDS, GRACE_WORDS, and every function exactly as before - full code is here)
 
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
@@ -173,16 +174,8 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# ==== PURPLE → PINK GRADIENT WITH STRONG SHADOW (VISIBLE ON DARK BACKGROUND) ====
-st.markdown("""
-<div style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); 
-           -webkit-background-clip: text; 
-           -webkit-text-fill-color: transparent;
-           text-shadow: 3px 3px 6px #000000, 0 0 15px #ffffff, 0 0 25px #E91E63;
-           font-size: 1.58rem; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 0.5rem;">
-    Enter a word or phrase here or select from Graces or Sins listed Below
-</div>
-""", unsafe_allow_html=True)
+# ==== FIXED ULTRA-VISIBLE PURPLE → PINK GRADIENT ====
+st.markdown('<div class="gradient-text" style="font-size:1.62rem;">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
 with col1: search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
@@ -214,7 +207,7 @@ if search_clicked and search_word:
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 3px 3px 6px #000000, 0 0 15px #ffffff, 0 0 25px #E91E63;">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="gradient-text" style="font-size:1.45rem;">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 
 if not os.path.exists("grace_word_library.json"):
@@ -257,7 +250,7 @@ if grace_event.selection.rows:
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 3px 3px 6px #000000, 0 0 15px #ffffff, 0 0 25px #E91E63;">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<h3 class="gradient-text" style="font-size:1.45rem;">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
@@ -296,4 +289,4 @@ st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
-st.caption("❤️ Built by Mike F. with love for the Heartdwellers family")
+st.caption("❤️ Built by Father Mike with love for the Heartdwellers family")
