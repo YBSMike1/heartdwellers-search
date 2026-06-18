@@ -284,7 +284,7 @@ df = pd.DataFrame(df_data)
 # Progress bar column with updated header
 column_config = {
     "Frequency": st.column_config.ProgressColumn(
-        "Frequency of usage in all messages from Jesus",
+        "Frequency of usage % in all messages from Jesus",
         help="How often this sin appears across all messages",
         min_value=0,
         max_value=max_freq,
