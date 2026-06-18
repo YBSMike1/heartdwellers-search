@@ -295,7 +295,7 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-st.markdown("### Enter a word or phrase")
+st.markdown("### Enter a word or phrase here or select from Graces or Sins listed Below")
 
 col1, col2 = st.columns([4, 1.2])
 with col1:
