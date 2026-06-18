@@ -14,15 +14,15 @@ import pandas as pd
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered")
 
-# ============ THEME TOGGLE ============
+# ============ DARK / LIGHT MODE TOGGLE ============
 col1, col2 = st.columns([6, 1])
 with col2:
-    dark_mode = st.toggle("🌙", value=True, key="dark_mode_toggle", help="Toggle between Dark and Light mode")
+    dark_mode = st.toggle("🌙", value=True, key="dark_mode_toggle", help="Toggle Dark / Light mode")
 
-# ============ DYNAMIC THEME CSS ============
+# ============ DYNAMIC THEME (with fixed visibility) ============
 if dark_mode:
-    # DARK ELEGANT THEME (current)
-    theme_css = """
+    # DARK ELEGANT THEME
+    st.markdown("""
     <style>
         .stApp { background-color: #1F1A24; }
         .main .block-container {
@@ -32,7 +32,7 @@ if dark_mode:
             box-shadow: 0 10px 40px rgba(0,0,0,0.35);
             max-width: 1100px;
         }
-        h1 { color: #C4457A; font-weight: 700; letter-spacing: -0.5px; }
+        h1, h2, h3, h4, h5, h6 { color: #C4457A !important; font-weight: 700; }
         .stTextInput input {
             background-color: #ffffff !important;
             color: #1F1A24 !important;
@@ -51,13 +51,12 @@ if dark_mode:
             font-size: 1.1rem !important;
             padding: 0.75rem 2.2rem !important;
             min-height: 3.4rem !important;
-            box-shadow: 0 6px 20px rgba(196, 69, 122, 0.35) !important;
         }
     </style>
-    """
+    """, unsafe_allow_html=True)
 else:
-    # LIGHT CLEAN THEME
-    theme_css = """
+    # LIGHT MODE (fixed for readability)
+    st.markdown("""
     <style>
         .stApp { background-color: #f8f1f5; }
         .main .block-container {
@@ -66,9 +65,14 @@ else:
             padding: 2.5rem 2rem;
             box-shadow: 0 8px 30px rgba(0,0,0,0.08);
             max-width: 1100px;
-            color: #2d2a33;
         }
-        h1 { color: #C4457A; font-weight: 700; letter-spacing: -0.5px; }
+        h1, h2, h3, h4, h5, h6 { 
+            color: #C4457A !important; 
+            font-weight: 700;
+        }
+        .stMarkdown, .stText, p, span, label, div {
+            color: #2d2a33 !important;
+        }
         .stTextInput input {
             background-color: #ffffff !important;
             color: #2d2a33 !important;
@@ -88,13 +92,8 @@ else:
             padding: 0.75rem 2.2rem !important;
             min-height: 3.4rem !important;
         }
-        .stMarkdown, .stText, label {
-            color: #2d2a33 !important;
-        }
     </style>
-    """
-
-st.markdown(theme_css, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
@@ -130,9 +129,6 @@ GRACE_WORDS = [
     "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy",
     "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"
 ]
-
-# ... (all the rest of the functions: get_sin_frequencies, get_grace_frequencies, 
-# search_italic_text, build_sin_word_analysis, build_grace_word_analysis, etc. remain exactly the same)
 
 def get_sin_frequencies():
     freq = {}
@@ -354,7 +350,7 @@ if search_clicked:
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ GRACE TABLE ============
+# ============ GRACE TABLE (On Top) ============
 st.markdown("---")
 st.header("✨ Browse Graces Alphabetically (Most Used First)")
 
@@ -447,7 +443,7 @@ if grace_event.selection.rows:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ SIN TABLE ============
+# ============ SIN TABLE (Below Grace) ============
 st.markdown("---")
 st.header("📖 Browse Sins Alphabetically (Most Used First)")
 
