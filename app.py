@@ -274,7 +274,7 @@ def build_grace_word_analysis():
 
     total = sum(grace_counter.values())
     ranked = []
-    for rank, (word, freq) in enumerate(grace_counter.most_common(), 1):
+    for rank, (word, freq) on enumerate(grace_counter.most_common(), 1):
         percentage = (freq / total * 100) if total > 0 else 0
         ranked.append({"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round(percentage, 2)})
 
@@ -295,12 +295,12 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# ============ FANCY FONT + STRONGER 3D SHADOW ============
+# ============ PLAYFAIR DISPLAY + STRONG 3D SHADOW ============
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 
 <div style="
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Playfair Display', Georgia, serif;
     font-size: 1.55rem;
     font-weight: 700;
     color: #C4457A;
