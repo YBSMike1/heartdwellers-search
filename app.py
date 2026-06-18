@@ -19,7 +19,7 @@ col1, col2 = st.columns([6, 1])
 with col2:
     dark_mode = st.toggle("🌙 Night", value=True, key="theme_toggle")
 
-# ============ THEME CSS ============
+# ============ THEME CSS (Fixed for visibility in both modes) ============
 if dark_mode:
     st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -40,6 +40,8 @@ if dark_mode:
         }
         .fancy-header { color: #E91E63; }
         .fancy-white { color: #ffffff; margin-bottom: 10px; }
+        
+        h1 { color: #ffffff !important; }
     </style>
     """, unsafe_allow_html=True)
 else:
@@ -54,8 +56,8 @@ else:
             font-size: 1.52rem;
             font-weight: 700;
             -webkit-text-stroke: 0.5px #C4457A;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.15);
-            background: rgba(255,255,255,0.85);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            background: #ffffff;
             padding: 8px 22px;
             border-radius: 12px;
             display: inline-block;
@@ -63,18 +65,22 @@ else:
         }
         .fancy-header { color: #C4457A; }
         .fancy-white { color: #2d2a33; margin-bottom: 10px; }
+        
+        h1 { color: #C4457A !important; }
+        
+        .stTextInput input {
+            background-color: #ffffff !important;
+            color: #2d2a33 !important;
+            border: 2px solid #C4457A !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
-# (All your word lists and functions remain exactly the same as before)
-
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
-
-# (All functions - get_*, search_*, build_* - are unchanged and fully included)
 
 def get_sin_frequencies():
     freq = {}
@@ -206,7 +212,7 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# Main instruction - now EXACTLY the same font/size as the headers
+# Main instruction - exactly same style as headers
 st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
@@ -321,7 +327,6 @@ st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
-# === NEW FOOTER TEXT (brighter white) ===
 st.markdown("""
 <p style="text-align:center; color:#f8f9fa; font-size:0.95rem; margin-top:1.5rem;">
     Built by Mike F. with love for our Heartdwellers family
