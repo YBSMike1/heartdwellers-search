@@ -25,7 +25,7 @@ st.markdown("""
         font-size: 1.52rem;
         font-weight: 700;
         color: #E91E63;
-        -webkit-text-stroke: 0.5px #2563EB;   /* Blue outline - 75% thinner */
+        -webkit-text-stroke: 0.5px #E91E63;   /* Red from progress bars - 75% thinner */
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
         padding: 8px 22px;
@@ -38,7 +38,7 @@ st.markdown("""
         font-size: 1.52rem;
         font-weight: 700;
         color: #ffffff;
-        -webkit-text-stroke: 0.5px #2563EB;   /* Blue outline - 75% thinner */
+        -webkit-text-stroke: 0.5px #E91E63;   /* Red from progress bars - 75% thinner */
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
         padding: 8px 22px;
