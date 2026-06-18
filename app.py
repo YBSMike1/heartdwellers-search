@@ -298,4 +298,4 @@ st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
-st.caption("❤️ Built with love for the Heartdwellers family")
+st.caption("❤️ Built by Mike F. with love for our Heartdwellers family")
