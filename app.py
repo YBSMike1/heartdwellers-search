@@ -19,7 +19,7 @@ col1, col2 = st.columns([6, 1])
 with col2:
     dark_mode = st.toggle("🌙 Night", value=True, key="theme_toggle")
 
-# ============ THEME CSS (Fixed for visibility in both modes) ============
+# ============ THEME CSS (Outline Removed) ============
 if dark_mode:
     st.markdown("""
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -31,7 +31,6 @@ if dark_mode:
             font-family: 'Playfair Display', serif;
             font-size: 1.52rem;
             font-weight: 700;
-            -webkit-text-stroke: 0.5px #E91E63;
             text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
             background: rgba(0,0,0,0.65);
             padding: 8px 22px;
@@ -40,8 +39,6 @@ if dark_mode:
         }
         .fancy-header { color: #E91E63; }
         .fancy-white { color: #ffffff; margin-bottom: 10px; }
-        
-        h1 { color: #ffffff !important; }
     </style>
     """, unsafe_allow_html=True)
 else:
@@ -55,7 +52,6 @@ else:
             font-family: 'Playfair Display', serif;
             font-size: 1.52rem;
             font-weight: 700;
-            -webkit-text-stroke: 0.5px #C4457A;
             text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
             background: #ffffff;
             padding: 8px 22px;
@@ -65,14 +61,6 @@ else:
         }
         .fancy-header { color: #C4457A; }
         .fancy-white { color: #2d2a33; margin-bottom: 10px; }
-        
-        h1 { color: #C4457A !important; }
-        
-        .stTextInput input {
-            background-color: #ffffff !important;
-            color: #2d2a33 !important;
-            border: 2px solid #C4457A !important;
-        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -212,7 +200,7 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# Main instruction - exactly same style as headers
+# Now exactly the same style as the headers below (no outline)
 st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
