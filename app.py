@@ -125,6 +125,8 @@ GRACE_WORDS = [
     "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"
 ]
 
+# (All your functions remain unchanged - get_sin_frequencies, build_grace_word_analysis, search_italic_text, etc.)
+
 def get_sin_frequencies():
     freq = {}
     if os.path.exists("sin_word_library.json"):
@@ -274,7 +276,7 @@ def build_grace_word_analysis():
 
     total = sum(grace_counter.values())
     ranked = []
-    for rank, (word, freq) in enumerate(grace_counter.most_common(), 1):   # ← FIXED: changed "on" to "in"
+    for rank, (word, freq) in enumerate(grace_counter.most_common(), 1):
         percentage = (freq / total * 100) if total > 0 else 0
         ranked.append({"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round(percentage, 2)})
 
@@ -295,12 +297,12 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# ============ PLAYFAIR DISPLAY + STRONG 3D SHADOW ============
+# ============ LORA FONT + STRONG 3D SHADOW ============
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@700&display=swap" rel="stylesheet">
 
 <div style="
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Lora', Georgia, serif;
     font-size: 1.55rem;
     font-weight: 700;
     color: #C4457A;
@@ -308,7 +310,7 @@ st.markdown("""
         0 4px 8px rgba(0,0,0,0.32),
         0 8px 16px rgba(196, 69, 122, 0.26),
         2px 3px 5px rgba(0,0,0,0.22);
-    letter-spacing: -0.4px;
+    letter-spacing: -0.35px;
     margin-bottom: 0.4rem;
     line-height: 1.3;
 ">
@@ -362,6 +364,8 @@ if search_clicked:
                                      res['text'], flags=re.IGNORECASE)
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+
+# (Grace table, Sin table, and bottom banner remain exactly the same as before)
 
 # ============ GRACE TABLE ============
 st.markdown("---")
