@@ -295,7 +295,23 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-st.markdown("### Enter a word or phrase here or select from Graces or Sins listed Below")
+# ============ NICER STYLED MAIN INSTRUCTION ============
+st.markdown("""
+<div style="
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.72rem;
+    font-weight: 700;
+    color: #C4457A;
+    text-shadow: 
+        0 3px 6px rgba(0,0,0,0.18),
+        0 6px 12px rgba(196, 69, 122, 0.12);
+    letter-spacing: -0.4px;
+    margin-bottom: 0.5rem;
+    line-height: 1.35;
+">
+    Enter a word or phrase here or select from Graces or Sins listed Below
+</div>
+""", unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
 with col1:
