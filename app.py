@@ -25,7 +25,7 @@ st.markdown("""
         font-size: 1.52rem;
         font-weight: 700;
         color: #E91E63;
-        -webkit-text-stroke: 0.5px #C9A227;   /* 75% thinner + 25% darker gold */
+        -webkit-text-stroke: 0.5px #2563EB;   /* Blue outline - 75% thinner */
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
         padding: 8px 22px;
@@ -38,7 +38,7 @@ st.markdown("""
         font-size: 1.52rem;
         font-weight: 700;
         color: #ffffff;
-        -webkit-text-stroke: 0.5px #C9A227;   /* 75% thinner + 25% darker gold */
+        -webkit-text-stroke: 0.5px #2563EB;   /* Blue outline - 75% thinner */
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
         padding: 8px 22px;
@@ -298,4 +298,4 @@ st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
-st.caption("❤️ Built by Mike F. with love for our Heartdwellers family")
+st.caption("❤️ Built with love for the Heartdwellers family")
