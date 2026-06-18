@@ -251,10 +251,9 @@ def build_grace_word_analysis():
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
+# === TOP BANNER (Wider) ===
 if os.path.exists("Newest banner.png"):
-    col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
-    with col2:
-        st.image("Newest banner.png", width=3400)
+    st.image("Newest banner.png", use_container_width=True)
 
 st.markdown("### Enter a word or phrase")
 
@@ -305,7 +304,7 @@ if search_clicked:
                 with st.expander(f"📄 {res['file']}", expanded=True):
                     st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ GRACE TABLE (Now on top) ============
+# ============ GRACE TABLE ============
 st.markdown("---")
 st.header("✨ Browse Graces Alphabetically (Most Used First)")
 
@@ -398,7 +397,7 @@ if grace_event.selection.rows:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ SIN TABLE (Now below Grace) ============
+# ============ SIN TABLE ============
 st.markdown("---")
 st.header("📖 Browse Sins Alphabetically (Most Used First)")
 
@@ -477,11 +476,9 @@ if sin_event.selection.rows:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ BOTTOM BANNER (ALWAYS VISIBLE AT VERY BOTTOM) ============
+# ============ BOTTOM BANNER (ALWAYS VISIBLE + WIDER) ============
 st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
-    col1, col2, col3 = st.columns([0.15, 3.7, 0.15])
-    with col2:
-        st.image("Bottom banner Std.png", width=3400)
+    st.image("Bottom banner Std.png", use_container_width=True)
 
 st.caption("Heartdwellers Search Tool — Built for the community")
