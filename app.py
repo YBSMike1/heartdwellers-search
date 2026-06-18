@@ -295,19 +295,18 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# ============ IMPROVED HEADING (Smaller + Visible 3D Shadow) ============
+# ============ IMPROVED HEADING (Georgia + Better 3D Shadow) ============
 st.markdown("""
 <div style="
-    font-family: 'Playfair Display', Georgia, serif;
-    font-size: 1.48rem;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.52rem;
     font-weight: 700;
     color: #C4457A;
     text-shadow: 
-        0 2px 4px rgba(0,0,0,0.25),
-        0 4px 8px rgba(196, 69, 122, 0.18),
-        1px 1px 2px rgba(0,0,0,0.15);
-    letter-spacing: -0.3px;
-    margin-bottom: 0.35rem;
+        0 2px 4px rgba(0,0,0,0.22),
+        0 4px 8px rgba(196, 69, 122, 0.15);
+    letter-spacing: -0.25px;
+    margin-bottom: 0.4rem;
     line-height: 1.3;
 ">
     Enter a word or phrase here or select from Graces or Sins listed Below
