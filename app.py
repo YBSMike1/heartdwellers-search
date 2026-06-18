@@ -19,18 +19,6 @@ st.markdown("""
 <style>
     .stApp { background: linear-gradient(135deg, #1F1A24 0%, #2A1F35 100%); }
     .main .block-container { background: rgba(42, 37, 51, 0.92) !important; backdrop-filter: blur(22px); border-radius: 28px; padding: 2.8rem 2.2rem; }
-    .fancy-text {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.68rem;
-        font-weight: 700;
-        color: #E91E63;
-        text-shadow: 3px 3px 6px #000000, 0 0 20px #ffffff, 0 0 35px #E91E63;
-        background: rgba(0,0,0,0.75);
-        padding: 12px 30px;
-        border-radius: 16px;
-        display: inline-block;
-        margin-bottom: 12px;
-    }
     .fancy-header {
         font-family: 'Playfair Display', serif;
         font-size: 1.52rem;
@@ -42,6 +30,18 @@ st.markdown("""
         border-radius: 12px;
         display: inline-block;
     }
+    .fancy-white {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.58rem;
+        font-weight: 700;
+        color: #ffffff;
+        text-shadow: 2px 2px 5px #000000, 0 0 18px #ffffff;
+        background: rgba(0,0,0,0.72);
+        padding: 10px 26px;
+        border-radius: 14px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -50,8 +50,6 @@ spell = SpellChecker()
 
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
-
-# (All functions are fully included below — same as your working version)
 
 def get_sin_frequencies():
     freq = {}
@@ -182,13 +180,12 @@ st.markdown("**Search Jesus' messages to Mother Clare**")
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-st.markdown('<div class="fancy-text">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
+# === MAIN INSTRUCTION - Now exactly same style as the other headers, but white ===
+st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
 with col1: search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
 with col2: search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
-
-# (The rest of the app — search logic, tables, download, etc. — is fully included exactly as your working version)
 
 if search_clicked and search_word:
     with st.spinner("Searching messages..."):
