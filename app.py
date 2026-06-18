@@ -397,11 +397,30 @@ if selected_sin:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ GRACE / POSITIVE TABLE (NEW) ============
+# ============ GRACE / POSITIVE TABLE ============
 st.markdown("---")
 st.header("✨ Grace Wheel – Positive Words & Virtues")
 
 st.markdown("Select a grace word below to search it instantly.")
+
+# === AUTO BUILD GRACE CACHE IF MISSING ===
+if not os.path.exists("grace_word_library.json"):
+    with st.spinner("Building grace frequency cache for the first time..."):
+        try:
+            build_grace_word_analysis()
+            st.success("✅ Grace frequency cache built automatically.")
+        except Exception as e:
+            st.warning(f"Could not build grace cache automatically: {e}")
+
+# === MANUAL REFRESH BUTTON FOR GRACE ===
+if st.button("🔄 Build / Refresh Grace Frequency Cache", key="build_grace_cache"):
+    with st.spinner("Scanning all messages for grace words..."):
+        try:
+            build_grace_word_analysis()
+            st.success("✅ Grace frequency cache updated successfully!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Error building grace cache: {e}")
 
 grace_frequencies = get_grace_frequencies()
 sorted_graces = sorted(GRACE_WORDS)
