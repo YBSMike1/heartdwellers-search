@@ -44,8 +44,6 @@ spell = SpellChecker()
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
 
-# (All your functions are fully here - get_sin_frequencies, get_grace_frequencies, get_word_definition, extract_date, search_file, search_italic_text, build_sin, build_grace)
-
 def get_sin_frequencies():
     freq = {}
     if os.path.exists("sin_word_library.json"):
@@ -169,18 +167,18 @@ def build_grace_word_analysis():
     with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
     return grace_data
 
-# ==================== UI WITH INVERTED GRADIENT ON ALL BIG TEXT ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
-# Inverted gradient (purple left → pink right) on ALL major titles
+# ==== PURPLE → PINK GRADIENT WITH STRONG SHADOW (VISIBLE ON DARK BACKGROUND) ====
 st.markdown("""
 <div style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); 
            -webkit-background-clip: text; 
            -webkit-text-fill-color: transparent;
+           text-shadow: 3px 3px 6px #000000, 0 0 15px #ffffff, 0 0 25px #E91E63;
            font-size: 1.58rem; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 0.5rem;">
     Enter a word or phrase here or select from Graces or Sins listed Below
 </div>
@@ -216,7 +214,7 @@ if search_clicked and search_word:
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 3px 3px 6px #000000, 0 0 15px #ffffff, 0 0 25px #E91E63;">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 
 if not os.path.exists("grace_word_library.json"):
@@ -259,7 +257,7 @@ if grace_event.selection.rows:
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<h3 style="background: linear-gradient(to right, #9C27B0 0%, #C4457A 50%, #E91E63 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 3px 3px 6px #000000, 0 0 15px #ffffff, 0 0 25px #E91E63;">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown("**Click in the box next to any word in the table below to search it instantly.**")
 sin_frequencies = get_sin_frequencies()
 sorted_sins = sorted(SIN_WORDS)
@@ -298,4 +296,4 @@ st.markdown("---")
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
-st.caption("❤️ Built with love for the Heartdwellers family")
+st.caption("❤️ Built by Mike F. with love for the Heartdwellers family")
