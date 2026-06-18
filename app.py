@@ -276,7 +276,6 @@ if search_clicked:
             definition = get_word_definition(search_word)
             st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
 
-            # DOWNLOAD BUTTON AT TOP
             doc = Document()
             for section in doc.sections:
                 section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
@@ -322,7 +321,7 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ SIN TABLE (Sorted Most → Least Used) ============
+# ============ SIN TABLE ============
 st.markdown("---")
 st.header("📖 Browse Sins Alphabetically (Most Used First)")
 
@@ -339,7 +338,7 @@ for sin in sorted_sins:
     df_data_sin.append({"Sin Word": sin, "Frequency": freq})
 
 df_sin = pd.DataFrame(df_data_sin)
-df_sin = df_sin.sort_values("Frequency", ascending=False)   # ← Most used first
+df_sin = df_sin.sort_values("Frequency", ascending=False)
 
 column_config_sin = {
     "Frequency": st.column_config.ProgressColumn(
@@ -360,7 +359,6 @@ sin_event = st.dataframe(
     selection_mode="single-row"
 )
 
-# Handle click on Sin table
 if sin_event.selection.rows:
     selected_row = sin_event.selection.rows[0]
     selected_sin = df_sin.iloc[selected_row]["Sin Word"]
@@ -402,29 +400,26 @@ if sin_event.selection.rows:
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
 
-# ============ GRACE TABLE (Sorted Most → Least Used) ============
+# ============ GRACE TABLE ============
 st.markdown("---")
-st.header("✨ Grace Wheel – Positive Words & Virtues (Most Used First)")
+st.header("✨ Browse Graces Alphabetically (Most Used First)")
 
 st.markdown("**Click any word in the table below to search it instantly.**")
 
-# Auto-build + manual refresh button for Grace cache
+# Auto-build with explanatory text (no button)
 if not os.path.exists("grace_word_library.json"):
-    with st.spinner("Building grace frequency cache for the first time..."):
-        try:
-            build_grace_word_analysis()
-            st.success("✅ Grace frequency cache built automatically.")
-        except Exception as e:
-            st.warning(f"Could not build grace cache automatically: {e}")
-
-if st.button("🔄 Build / Refresh Grace Frequency Cache", key="build_grace_cache"):
+    st.markdown(
+        "⏳ **Building the Grace frequency cache for the first time.**<br>"
+        "This runs automatically because new messages are added often. "
+        "It only needs to happen once — future visits will load instantly.",
+        unsafe_allow_html=True
+    )
     with st.spinner("Scanning all messages for grace words..."):
         try:
             build_grace_word_analysis()
-            st.success("✅ Grace frequency cache updated successfully!")
-            st.rerun()
+            st.success("✅ Grace frequency cache built successfully.")
         except Exception as e:
-            st.error(f"Error building grace cache: {e}")
+            st.error(f"Error building cache: {e}")
 
 grace_frequencies = get_grace_frequencies()
 sorted_graces = sorted(GRACE_WORDS)
@@ -437,7 +432,7 @@ for word in sorted_graces:
     df_data_grace.append({"Grace Word": word, "Frequency": freq})
 
 df_grace = pd.DataFrame(df_data_grace)
-df_grace = df_grace.sort_values("Frequency", ascending=False)   # ← Most used first
+df_grace = df_grace.sort_values("Frequency", ascending=False)
 
 column_config_grace = {
     "Frequency": st.column_config.ProgressColumn(
@@ -458,7 +453,6 @@ grace_event = st.dataframe(
     selection_mode="single-row"
 )
 
-# Handle click on Grace table
 if grace_event.selection.rows:
     selected_row = grace_event.selection.rows[0]
     selected_grace = df_grace.iloc[selected_row]["Grace Word"]
