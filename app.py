@@ -233,7 +233,7 @@ def build_grace_word_analysis():
 
     total = sum(grace_counter.values())
     ranked = []
-    for rank, (word, freq) in enumerate(grace_counter.most_common(), 1):
+    for rank, (word, freq) on enumerate(grace_counter.most_common(), 1):
         percentage = (freq / total * 100) if total > 0 else 0
         ranked.append({"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round(percentage, 2)})
 
@@ -321,92 +321,12 @@ if search_clicked:
             else:
                 st.info("No matches found.")
 
-# ============ SIN TABLE ============
-st.markdown("---")
-st.header("📖 Browse Sins Alphabetically (Most Used First)")
-
-st.markdown("**Click any word in the table below to search it instantly.**")
-
-sin_frequencies = get_sin_frequencies()
-sorted_sins = sorted(SIN_WORDS)
-
-df_data_sin = []
-max_freq_sin = max(sin_frequencies.values()) if sin_frequencies else 438
-
-for sin in sorted_sins:
-    freq = sin_frequencies.get(sin, 0)
-    df_data_sin.append({"Sin Word": sin, "Frequency": freq})
-
-df_sin = pd.DataFrame(df_data_sin)
-df_sin = df_sin.sort_values("Frequency", ascending=False)
-
-column_config_sin = {
-    "Frequency": st.column_config.ProgressColumn(
-        "Frequency of usage in all messages",
-        help="How often this sin appears across all messages",
-        min_value=0,
-        max_value=max_freq_sin,
-        format="%d",
-    )
-}
-
-sin_event = st.dataframe(
-    df_sin,
-    column_config=column_config_sin,
-    use_container_width=True,
-    hide_index=True,
-    on_select="rerun",
-    selection_mode="single-row"
-)
-
-if sin_event.selection.rows:
-    selected_row = sin_event.selection.rows[0]
-    selected_sin = df_sin.iloc[selected_row]["Sin Word"]
-
-    with st.spinner(f"Searching for '{selected_sin}'..."):
-        results, file_count, match_count = search_italic_text(selected_sin, DOCX_FOLDER)
-
-    if results:
-        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-        definition = get_word_definition(selected_sin)
-        st.info(f"**📖 Dictionary Definition of '{selected_sin}':** {definition}")
-
-        doc = Document()
-        for section in doc.sections:
-            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-        doc.add_heading(f'What did Jesus teach us about "{selected_sin}"?', level=1)
-        for res in results:
-            doc.add_paragraph(res["file"], style='Heading 3')
-            p = doc.add_paragraph(res["text"])
-            for run in p.runs: run.italic = True
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-            doc.save(tmp.name)
-            with open(tmp.name, "rb") as f:
-                st.download_button(
-                    label="📥 Download Full Report (Word Document)",
-                    data=f,
-                    file_name=f"Jesus speaks about {selected_sin}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
-
-        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-        st.subheader("📋 Search Results")
-
-        for res in results:
-            highlighted = re.sub(rf'(?<!\w){re.escape(selected_sin)}(?!\w)', 
-                                 f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_sin}</span>', 
-                                 res['text'], flags=re.IGNORECASE)
-            with st.expander(f"📄 {res['file']}", expanded=True):
-                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
-
-# ============ GRACE TABLE ============
+# ============ GRACE TABLE (Now on top) ============
 st.markdown("---")
 st.header("✨ Browse Graces Alphabetically (Most Used First)")
 
 st.markdown("**Click any word in the table below to search it instantly.**")
 
-# Auto-build with explanatory text (no button)
 if not os.path.exists("grace_word_library.json"):
     st.markdown(
         "⏳ **Building the Grace frequency cache for the first time.**<br>"
@@ -490,6 +410,85 @@ if grace_event.selection.rows:
         for res in results:
             highlighted = re.sub(rf'(?<!\w){re.escape(selected_grace)}(?!\w)', 
                                  f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_grace}</span>', 
+                                 res['text'], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+
+# ============ SIN TABLE (Now below Grace) ============
+st.markdown("---")
+st.header("📖 Browse Sins Alphabetically (Most Used First)")
+
+st.markdown("**Click any word in the table below to search it instantly.**")
+
+sin_frequencies = get_sin_frequencies()
+sorted_sins = sorted(SIN_WORDS)
+
+df_data_sin = []
+max_freq_sin = max(sin_frequencies.values()) if sin_frequencies else 438
+
+for sin in sorted_sins:
+    freq = sin_frequencies.get(sin, 0)
+    df_data_sin.append({"Sin Word": sin, "Frequency": freq})
+
+df_sin = pd.DataFrame(df_data_sin)
+df_sin = df_sin.sort_values("Frequency", ascending=False)
+
+column_config_sin = {
+    "Frequency": st.column_config.ProgressColumn(
+        "Frequency of usage in all messages",
+        help="How often this sin appears across all messages",
+        min_value=0,
+        max_value=max_freq_sin,
+        format="%d",
+    )
+}
+
+sin_event = st.dataframe(
+    df_sin,
+    column_config=column_config_sin,
+    use_container_width=True,
+    hide_index=True,
+    on_select="rerun",
+    selection_mode="single-row"
+)
+
+if sin_event.selection.rows:
+    selected_row = sin_event.selection.rows[0]
+    selected_sin = df_sin.iloc[selected_row]["Sin Word"]
+
+    with st.spinner(f"Searching for '{selected_sin}'..."):
+        results, file_count, match_count = search_italic_text(selected_sin, DOCX_FOLDER)
+
+    if results:
+        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+        definition = get_word_definition(selected_sin)
+        st.info(f"**📖 Dictionary Definition of '{selected_sin}':** {definition}")
+
+        doc = Document()
+        for section in doc.sections:
+            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        doc.add_heading(f'What did Jesus teach us about "{selected_sin}"?', level=1)
+        for res in results:
+            doc.add_paragraph(res["file"], style='Heading 3')
+            p = doc.add_paragraph(res["text"])
+            for run in p.runs: run.italic = True
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            doc.save(tmp.name)
+            with open(tmp.name, "rb") as f:
+                st.download_button(
+                    label="📥 Download Full Report (Word Document)",
+                    data=f,
+                    file_name=f"Jesus speaks about {selected_sin}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
+
+        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+        st.subheader("📋 Search Results")
+
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(selected_sin)}(?!\w)', 
+                                 f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_sin}</span>', 
                                  res['text'], flags=re.IGNORECASE)
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
