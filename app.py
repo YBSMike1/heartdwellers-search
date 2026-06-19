@@ -28,25 +28,28 @@ st.markdown("""
         padding: 8px 18px;
         border-radius: 12px;
         display: inline-block;
-        white-space: nowrap;   /* force single line */
+        white-space: nowrap;
     }
     .fancy-header { 
         font-size: 1.52rem; 
         color: #E91E63; 
     }
     .fancy-white { 
-        font-size: 1.35rem;   /* slightly smaller so the long text fits on ONE line */
+        font-size: 1.35rem; 
         color: #ffffff; 
         margin-bottom: 10px; 
     }
 
-    /* Search Button - Exact same font as the big instruction text */
-    .stButton button[kind="primary"] {
+    /* STRONG rule to force Playfair Display on the Search button */
+    .stButton button[kind="primary"],
+    .stButton > button,
+    div.stButton > button:first-child,
+    button[data-testid="baseButton-primary"] {
+        font-family: 'Playfair Display', Georgia, serif !important;
+        font-weight: 700 !important;
         background: linear-gradient(90deg, #9C27B0, #E91E63) !important;
         color: white !important;
         border-radius: 50px !important;
-        font-family: 'Playfair Display', serif !important;
-        font-weight: 700 !important;
         font-size: 1.15rem !important;
         padding: 0.65rem 1.9rem !important;
         height: 58px !important;
