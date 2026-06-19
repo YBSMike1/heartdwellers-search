@@ -33,13 +33,13 @@ st.markdown("""
     .fancy-header { color: #E91E63; }
     .fancy-white { color: #ffffff; margin-bottom: 10px; }
 
-    /* Website-style Search Button */
+    /* Website-style Search Button - Font 3pts bigger */
     .stButton button[kind="primary"] {
         background: linear-gradient(90deg, #9C27B0, #E91E63) !important;
         color: white !important;
         border-radius: 50px !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;
+        font-size: 1.15rem !important;   /* 3 points bigger */
         padding: 0.65rem 1.9rem !important;
         height: 58px !important;
         box-shadow: 0 4px 15px rgba(233, 30, 99, 0.6);
