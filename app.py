@@ -31,16 +31,18 @@ st.markdown("""
         white-space: nowrap;
     }
     .fancy-header { 
-        font-size: 1.35rem !important;   /* forced to exactly match the instruction text */
+        font-size: 1.35rem !important;
         color: #E91E63; 
         text-align: center;
         display: block;
         margin: 0 auto 12px auto;
+        font-variation-settings: "opsz" 200;   /* Explicit optical size tuning for refined large display */
     }
     .fancy-white { 
         font-size: 1.35rem; 
         color: #ffffff; 
         margin-bottom: 10px; 
+        font-variation-settings: "opsz" 200;   /* Explicit optical size tuning for refined large display */
     }
 
     /* Search Button - Exact same font as the big instruction text */
