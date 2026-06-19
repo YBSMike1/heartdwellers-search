@@ -27,21 +27,21 @@ st.markdown("""
         background: rgba(0,0,0,0.65);
         padding: 10px 22px;
         border-radius: 16px;
-        display: inline-block;
+        display: block !important;
         white-space: nowrap;
-        max-width: 700px;           /* Match table width */
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 700px;
+        margin-left: auto !important;
+        margin-right: auto !important;
         text-align: center;
     }
     .fancy-header { 
-        font-size: 1.18rem !important;   /* Same smaller size as top box */
+        font-size: 1.18rem !important;
         color: #E91E63; 
         margin-bottom: 12px;
         font-variation-settings: "opsz" 200;
     }
     .fancy-white { 
-        font-size: 1.18rem;              /* Smaller so long text fits on one line */
+        font-size: 1.18rem; 
         color: #ffffff; 
         margin-bottom: 14px; 
         font-variation-settings: "opsz" 200;
