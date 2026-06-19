@@ -14,7 +14,6 @@ import pandas as pd
 
 st.set_page_config(page_title="Heartdwellers Search Tool", layout="centered", page_icon="❤️")
 
-# ============ DARK THEME (No Toggle) ============
 st.markdown("""
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -33,6 +32,23 @@ st.markdown("""
     }
     .fancy-header { color: #E91E63; }
     .fancy-white { color: #ffffff; margin-bottom: 10px; }
+
+    /* Search Button - Matches Website Style */
+    .stButton button[kind="primary"] {
+        background: linear-gradient(90deg, #9C27B0, #E91E63) !important;
+        color: white !important;
+        border-radius: 50px !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        padding: 0.85rem 2.5rem !important;
+        box-shadow: 0 4px 15px rgba(233, 30, 99, 0.6);
+        border: 2px solid #ffffff33;
+        transition: all 0.3s ease;
+    }
+    .stButton button[kind="primary"]:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(233, 30, 99, 0.8);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -41,6 +57,8 @@ spell = SpellChecker()
 
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
+
+# (All functions remain the same - full code as before)
 
 def get_sin_frequencies():
     freq = {}
@@ -165,7 +183,6 @@ def build_grace_word_analysis():
     with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
     return grace_data
 
-# ==================== UI ====================
 st.title("❤️ Heartdwellers Search Tool")
 st.markdown("**Search Jesus' messages to Mother Clare**")
 
