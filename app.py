@@ -31,8 +31,11 @@ st.markdown("""
         white-space: nowrap;
     }
     .fancy-header { 
-        font-size: 1.35rem;   /* Now exactly matches the instruction text size */
+        font-size: 1.35rem; 
         color: #E91E63; 
+        text-align: center;
+        display: block;
+        margin: 0 auto 12px auto;
     }
     .fancy-white { 
         font-size: 1.35rem; 
