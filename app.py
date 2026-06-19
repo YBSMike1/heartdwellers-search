@@ -33,16 +33,20 @@ st.markdown("""
     .fancy-header { color: #E91E63; }
     .fancy-white { color: #ffffff; margin-bottom: 10px; }
 
-    /* Smaller Search Button - 25% smaller */
+    /* Search Button - Same height as text input + website style */
     .stButton button[kind="primary"] {
         background: linear-gradient(90deg, #9C27B0, #E91E63) !important;
         color: white !important;
         border-radius: 50px !important;
         font-weight: 700 !important;
-        font-size: 0.95rem !important;   /* smaller */
-        padding: 0.65rem 1.9rem !important;  /* 25% smaller padding */
+        font-size: 1.0rem !important;
+        padding: 0.65rem 1.9rem !important;
+        height: 58px !important;           /* Matches typical text input height */
         box-shadow: 0 4px 15px rgba(233, 30, 99, 0.6);
         border: 2px solid #ffffff33;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         transition: all 0.3s ease;
     }
     .stButton button[kind="primary"]:hover {
@@ -190,8 +194,10 @@ if os.path.exists("Newest banner.png"):
 st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns([4, 1.2])
-with col1: search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
-with col2: search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
+with col1: 
+    search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
+with col2: 
+    search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
 if search_clicked and search_word:
     with st.spinner("Searching messages..."):
