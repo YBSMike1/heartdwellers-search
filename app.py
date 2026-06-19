@@ -25,28 +25,26 @@ st.markdown("""
         font-weight: 700;
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
-        padding: 8px 18px;
-        border-radius: 12px;
+        padding: 10px 22px;
+        border-radius: 16px;
         display: inline-block;
         white-space: nowrap;
+        max-width: 720px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
     }
     .fancy-header { 
         font-size: 1.35rem !important;
         color: #E91E63; 
-        text-align: center;
-        display: block;
-        margin: 0 auto 12px auto;
+        margin-bottom: 12px;
         font-variation-settings: "opsz" 200;
     }
     .fancy-white { 
         font-size: 1.35rem; 
         color: #ffffff; 
-        margin-bottom: 10px; 
+        margin-bottom: 14px; 
         font-variation-settings: "opsz" 200;
-        max-width: 680px;           /* NEW: limits width so it ends near the input field */
-        margin-left: auto;
-        margin-right: auto;
-        text-align: center;
     }
 
     /* Search Button - Exact same font as the big instruction text */
