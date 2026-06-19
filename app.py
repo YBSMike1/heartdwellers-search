@@ -36,13 +36,17 @@ st.markdown("""
         text-align: center;
         display: block;
         margin: 0 auto 12px auto;
-        font-variation-settings: "opsz" 200;   /* Explicit optical size tuning for refined large display */
+        font-variation-settings: "opsz" 200;
     }
     .fancy-white { 
         font-size: 1.35rem; 
         color: #ffffff; 
         margin-bottom: 10px; 
-        font-variation-settings: "opsz" 200;   /* Explicit optical size tuning for refined large display */
+        font-variation-settings: "opsz" 200;
+        max-width: 680px;           /* NEW: limits width so it ends near the input field */
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
     }
 
     /* Search Button - Exact same font as the big instruction text */
