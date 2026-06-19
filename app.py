@@ -33,14 +33,14 @@ st.markdown("""
     .fancy-header { color: #E91E63; }
     .fancy-white { color: #ffffff; margin-bottom: 10px; }
 
-    /* Search Button - Matches Website Style */
+    /* Smaller Search Button - 25% smaller */
     .stButton button[kind="primary"] {
         background: linear-gradient(90deg, #9C27B0, #E91E63) !important;
         color: white !important;
         border-radius: 50px !important;
         font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        padding: 0.85rem 2.5rem !important;
+        font-size: 0.95rem !important;   /* smaller */
+        padding: 0.65rem 1.9rem !important;  /* 25% smaller padding */
         box-shadow: 0 4px 15px rgba(233, 30, 99, 0.6);
         border: 2px solid #ffffff33;
         transition: all 0.3s ease;
@@ -57,8 +57,6 @@ spell = SpellChecker()
 
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
-
-# (All functions remain the same - full code as before)
 
 def get_sin_frequencies():
     freq = {}
