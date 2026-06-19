@@ -29,19 +29,19 @@ st.markdown("""
         border-radius: 16px;
         display: inline-block;
         white-space: nowrap;
-        max-width: 720px;
+        max-width: 700px;           /* Match table width */
         margin-left: auto;
         margin-right: auto;
         text-align: center;
     }
     .fancy-header { 
-        font-size: 1.35rem !important;
+        font-size: 1.18rem !important;   /* Same smaller size as top box */
         color: #E91E63; 
         margin-bottom: 12px;
         font-variation-settings: "opsz" 200;
     }
     .fancy-white { 
-        font-size: 1.35rem; 
+        font-size: 1.18rem;              /* Smaller so long text fits on one line */
         color: #ffffff; 
         margin-bottom: 14px; 
         font-variation-settings: "opsz" 200;
