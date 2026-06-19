@@ -22,16 +22,23 @@ st.markdown("""
 
     .fancy-header, .fancy-white {
         font-family: 'Playfair Display', serif;
-        font-size: 1.52rem;
         font-weight: 700;
         text-shadow: 2px 2px 5px #000000, 0 0 15px #ffffff;
         background: rgba(0,0,0,0.65);
-        padding: 8px 22px;
+        padding: 8px 18px;
         border-radius: 12px;
         display: inline-block;
+        white-space: nowrap;   /* force single line */
     }
-    .fancy-header { color: #E91E63; }
-    .fancy-white { color: #ffffff; margin-bottom: 10px; }
+    .fancy-header { 
+        font-size: 1.52rem; 
+        color: #E91E63; 
+    }
+    .fancy-white { 
+        font-size: 1.35rem;   /* slightly smaller so the long text fits on ONE line */
+        color: #ffffff; 
+        margin-bottom: 10px; 
+    }
 
     /* Search Button - Exact same font as the big instruction text */
     .stButton button[kind="primary"] {
