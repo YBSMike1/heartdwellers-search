@@ -31,7 +31,7 @@ st.markdown("""
         white-space: nowrap;
     }
     .fancy-header { 
-        font-size: 1.52rem; 
+        font-size: 1.35rem;   /* Now exactly matches the instruction text size */
         color: #E91E63; 
     }
     .fancy-white { 
@@ -40,7 +40,7 @@ st.markdown("""
         margin-bottom: 10px; 
     }
 
-    /* STRONG rule to force Playfair Display on the Search button */
+    /* Search Button - Exact same font as the big instruction text */
     .stButton button[kind="primary"],
     .stButton > button,
     div.stButton > button:first-child,
