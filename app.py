@@ -31,7 +31,7 @@ st.markdown("""
         white-space: nowrap;
     }
     .fancy-header { 
-        font-size: 1.35rem; 
+        font-size: 1.35rem !important;   /* forced to exactly match the instruction text */
         color: #E91E63; 
         text-align: center;
         display: block;
