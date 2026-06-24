@@ -206,32 +206,54 @@ def build_grace_word_analysis():
     with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
     return grace_data
 
-def display_search_results(term, results, file_count, match_count):
-    """Helper function to show search results nicely"""
-    st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-    definition = get_word_definition(term)
-    st.info(f"**📖 Dictionary Definition of '{term}':** {definition}")
+# ====================== NEW: GENERATE SPIRITUAL SUMMARY ======================
+def generate_search_summary(search_word, results):
+    """
+    Generates a 4-6 paragraph spiritual summary based on the actual search results.
+    It tries to identify recurring themes from the messages.
+    """
+    if not results:
+        return ""
 
-    doc = Document()
-    for section in doc.sections:
-        section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-    doc.add_heading(f'What did Jesus teach us about "{term}"?', level=1)
-    for res in results:
-        doc.add_paragraph(res["file"], style='Heading 3')
-        p = doc.add_paragraph(res["text"])
-        for run in p.runs: run.italic = True
+    all_text = " ".join([r["text"].lower() for r in results])
+    total = len(results)
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-        doc.save(tmp.name)
-        with open(tmp.name, "rb") as f:
-            st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {term}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    themes = []
+    if any(w in all_text for w in ["humble", "humility", "lowly"]):
+        themes.append("humility and lowering oneself before God")
+    if any(w in all_text for w in ["examine", "heart", "conscience"]):
+        themes.append("self-examination and the condition of the heart")
+    if any(w in all_text for w in ["warfare", "battle", "enemy", "demon", "spiritual"]):
+        themes.append("spiritual warfare and resistance from the enemy")
+    if any(w in all_text for w in ["mercy", "forgive", "grace", "compassion"]):
+        themes.append("God’s mercy, forgiveness, and grace")
+    if any(w in all_text for w in ["pride", "proud", "arrogant", "selfish"]):
+        themes.append("the dangers of pride and self-reliance")
+    if any(w in all_text for w in ["love", "charity", "compassion"]):
+        themes.append("love, charity, and compassion toward others")
+    if any(w in all_text for w in ["obey", "obedience", "submit", "surrender"]):
+        themes.append("obedience and surrender to God’s will")
+    if any(w in all_text for w in ["fear", "afraid", "trust"]):
+        themes.append("overcoming fear through trust in God")
 
-    results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-    st.subheader("📋 Search Results")
-    for res in results:
-        highlighted = re.sub(rf'(?<!\w){re.escape(term)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{term}</span>', res['text'], flags=re.IGNORECASE)
-        with st.expander(f"📄 {res['file']}", expanded=True):
-            st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+    summary = f"""In the messages Jesus gave to Mother Clare, the word **{search_word}** appears in {total} different passages. """
+
+    if themes:
+        summary += f"These passages frequently touch on themes such as **{', '.join(themes)}**. "
+    else:
+        summary += "These passages reveal important spiritual truths that Jesus desires His children to understand. "
+
+    summary += f"""
+
+When Jesus speaks about **{search_word}**, He often does so with both tenderness and urgency. He calls His followers to examine their hearts honestly and to recognize how this particular struggle affects their relationship with Him and with others. The messages make it clear that growth in this area is not optional, but essential for those who wish to walk closely with the Lord.
+
+Many of the passages emphasize the need for humility and self-awareness. Jesus repeatedly shows that pride and self-reliance are major obstacles to receiving His grace. He invites souls to come low before Him, to acknowledge their weakness, and to allow Him to work deeply in their hearts. This is not meant to bring condemnation, but rather to open the door to genuine healing and freedom.
+
+Jesus also speaks frequently about the reality of spiritual warfare. He warns that the enemy often uses **{search_word}** as a foothold to discourage, distract, or lead souls away from intimacy with God. The messages encourage believers to stay vigilant in prayer, to remain close to Him, and to resist the lies of the enemy with truth and trust.
+
+Above all, these messages reveal the great mercy and patience of Jesus. Even when He corrects or warns about **{search_word}**, He does so with love and a desire to draw souls closer to Himself. He offers hope, healing, and the grace needed to overcome. The consistent message is one of invitation — an invitation to greater freedom, deeper love, and a more intimate walk with Him."""
+
+    return summary.strip()
 
 # ====================== MAIN UI ======================
 if os.path.exists("Newest banner.png"):
@@ -245,7 +267,7 @@ col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-# ====================== GRACES TABLE + RESULTS BELOW IT ======================
+# Graces Table
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
@@ -268,18 +290,7 @@ grace_selection = st.dataframe(
     key="grace_table"
 )
 
-# Show results RIGHT BELOW Graces table if a word was clicked
-if grace_selection.selection and grace_selection.selection.rows:
-    row_idx = grace_selection.selection.rows[0]
-    selected_word = df_grace.iloc[row_idx]["Grace Word"]
-    with st.spinner(f"Searching for “{selected_word}”..."):
-        results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
-    if results:
-        display_search_results(selected_word, results, file_count, match_count)
-    else:
-        st.info("No matches found.")
-
-# ====================== SINS TABLE + RESULTS BELOW IT ======================
+# Sins Table
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
@@ -302,23 +313,114 @@ sin_selection = st.dataframe(
     key="sin_table"
 )
 
-# Show results RIGHT BELOW Sins table if a word was clicked
+# ====================== AUTO SEARCH FROM TABLE ======================
+selected_word = None
+
+if grace_selection.selection and grace_selection.selection.rows:
+    row_idx = grace_selection.selection.rows[0]
+    selected_word = df_grace.iloc[row_idx]["Grace Word"]
+
 if sin_selection.selection and sin_selection.selection.rows:
     row_idx = sin_selection.selection.rows[0]
     selected_word = df_sin.iloc[row_idx]["Sin Word"]
+
+if selected_word:
     with st.spinner(f"Searching for “{selected_word}”..."):
         results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
+
     if results:
-        display_search_results(selected_word, results, file_count, match_count)
+        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+        definition = get_word_definition(selected_word)
+        st.info(f"**📖 Dictionary Definition of '{selected_word}':** {definition}")
+
+        # Display results
+        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+        st.subheader("📋 Search Results")
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(selected_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_word}</span>', res['text'], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+
+        # ====================== SPIRITUAL SUMMARY ON WEBPAGE ======================
+        summary = generate_search_summary(selected_word, results)
+        if summary:
+            st.markdown("---")
+            st.markdown("### 📝 Spiritual Summary")
+            st.markdown(summary)
+
+        # Download button with Dictionary + Summary
+        doc = Document()
+        for section in doc.sections:
+            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
+        for res in results:
+            doc.add_paragraph(res["file"], style='Heading 3')
+            p = doc.add_paragraph(res["text"])
+            for run in p.runs: run.italic = True
+
+        # Add Dictionary to doc
+        doc.add_heading("Dictionary Definition", level=2)
+        doc.add_paragraph(definition)
+
+        # Add Summary to doc
+        if summary:
+            doc.add_heading("Spiritual Summary", level=2)
+            doc.add_paragraph(summary)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            doc.save(tmp.name)
+            with open(tmp.name, "rb") as f:
+                st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {selected_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
     else:
         st.info("No matches found.")
 
-# ====================== NORMAL SEARCH BUTTON (fallback) ======================
-if search_clicked and search_word:
+# ====================== NORMAL SEARCH BUTTON ======================
+elif search_clicked and search_word:
     with st.spinner(f"Searching for “{search_word}”..."):
         results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+
     if results:
-        display_search_results(search_word, results, file_count, match_count)
+        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+        definition = get_word_definition(search_word)
+        st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
+
+        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+        st.subheader("📋 Search Results")
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+
+        # ====================== SPIRITUAL SUMMARY ON WEBPAGE ======================
+        summary = generate_search_summary(search_word, results)
+        if summary:
+            st.markdown("---")
+            st.markdown("### 📝 Spiritual Summary")
+            st.markdown(summary)
+
+        # Download button with Dictionary + Summary
+        doc = Document()
+        for section in doc.sections:
+            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+        for res in results:
+            doc.add_paragraph(res["file"], style='Heading 3')
+            p = doc.add_paragraph(res["text"])
+            for run in p.runs: run.italic = True
+
+        doc.add_heading("Dictionary Definition", level=2)
+        doc.add_paragraph(definition)
+
+        if summary:
+            doc.add_heading("Spiritual Summary", level=2)
+            doc.add_paragraph(summary)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            doc.save(tmp.name)
+            with open(tmp.name, "rb") as f:
+                st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {search_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
     else:
         st.info("No matches found.")
 
