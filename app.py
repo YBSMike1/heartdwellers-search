@@ -359,19 +359,20 @@ if selected_word:
 
             doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
 
+            # Dictionary Definition early
+            doc.add_heading("Dictionary Definition", level=2)
+            doc.add_paragraph(f"{selected_word}: {definition}")
+
+            # Spiritual Summary comes early (as requested)
+            if summary:
+                doc.add_heading("Spiritual Summary", level=2)
+                doc.add_paragraph(summary)
+
+            # Then the actual messages
             for res in results:
                 doc.add_paragraph(res["file"], style='Heading 3')
                 p = doc.add_paragraph(res["text"])
                 for run in p.runs: run.italic = True
-
-            # Dictionary in docx
-            doc.add_heading("Dictionary Definition", level=2)
-            doc.add_paragraph(f"{selected_word}: {definition}")
-
-            # Summary in docx
-            if summary:
-                doc.add_heading("Spiritual Summary", level=2)
-                doc.add_paragraph(summary)
 
             # Bottom banner in docx
             if os.path.exists("Bottom banner Std.png"):
@@ -410,18 +411,27 @@ elif search_clicked and search_word:
         doc = Document()
         for section in doc.sections:
             section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+
         if os.path.exists("Newest banner.png"):
             doc.add_picture("Newest banner.png", width=Inches(6.5))
+
         doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+
+        # Dictionary Definition early
+        doc.add_heading("Dictionary Definition", level=2)
+        doc.add_paragraph(f"{search_word}: {definition}")
+
+        # Spiritual Summary comes early (as requested)
+        if summary:
+            doc.add_heading("Spiritual Summary", level=2)
+            doc.add_paragraph(summary)
+
+        # Then the actual messages
         for res in results:
             doc.add_paragraph(res["file"], style='Heading 3')
             p = doc.add_paragraph(res["text"])
             for run in p.runs: run.italic = True
-        doc.add_heading("Dictionary Definition", level=2)
-        doc.add_paragraph(f"{search_word}: {definition}")
-        if summary:
-            doc.add_heading("Spiritual Summary", level=2)
-            doc.add_paragraph(summary)
+
         if os.path.exists("Bottom banner Std.png"):
             doc.add_picture("Bottom banner Std.png", width=Inches(6.5))
 
