@@ -209,8 +209,10 @@ def build_grace_word_analysis():
 def generate_search_summary(search_word, results):
     if not results:
         return ""
+
     all_text = " ".join([r["text"].lower() for r in results])
     total = len(results)
+
     themes = []
     if any(w in all_text for w in ["humble", "humility", "lowly"]):
         themes.append("humility and lowering oneself before God")
@@ -230,6 +232,7 @@ def generate_search_summary(search_word, results):
         themes.append("overcoming fear through trust in God")
 
     summary = f"""In the messages Jesus gave to Mother Clare, the word **{search_word}** appears in {total} different passages. """
+
     if themes:
         summary += f"These passages frequently touch on themes such as **{', '.join(themes)}**. "
     else:
@@ -243,12 +246,9 @@ Many of the passages emphasize the need for humility and self-awareness. Jesus r
 
 Jesus also speaks frequently about the reality of spiritual warfare. He warns that the enemy often uses **{search_word}** as a foothold to discourage, distract, or lead souls away from intimacy with God. The messages encourage believers to stay vigilant in prayer, to remain close to Him, and to resist the lies of the enemy with truth and trust.
 
-Above all, these messages reveal the great mercy and patience of Jesus. Even when He corrects or warns about **{search_word}**, He does so with love and a desire to draw souls closer to Himself. He offers hope, healing, and the grace needed to overcome. The consistent message is one of invitation — an invitation to greater freedom, deeper love, and a more intimate walk with Him."""
+Above all, these messages reveal the great mercy and patience of Jesus. Even when He corrects or warns about **{search_word}**, He does so with love and a desire to draw souls closer to Himself. He offers hope, healing, and the grace needed to overcome. The consistent message is one of invitation — an invitation to greater freedom, deeper love, and a more intimate walk with Him.
 
-    # Add the requested closing sentence to every summary
-    summary += """
-
-I hope this message has helped you today, may the Lord Jesus Christ Bless you and keep you each and every day"""
+I hope this message has helped you today, may the Lord Jesus Christ Bless you and keep you each and every day."""
 
     return summary.strip()
 
@@ -287,9 +287,6 @@ grace_selection = st.dataframe(
     key="grace_table"
 )
 
-# Container for Graces results (placed right after the Graces table)
-grace_results_container = st.container()
-
 # ====================== SINS TABLE ======================
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
@@ -313,142 +310,92 @@ sin_selection = st.dataframe(
     key="sin_table"
 )
 
-# Container for Sins results (placed right after the Sins table)
-sin_results_container = st.container()
-
-# ====================== AUTO SEARCH FROM TABLE ======================
+# ====================== CLEAR SELECTIONS FIRST, THEN SEARCH ======================
 selected_word = None
-selected_from = None
+search_triggered = False
 
+# Check for table selections
 if grace_selection.selection and grace_selection.selection.rows:
     row_idx = grace_selection.selection.rows[0]
     selected_word = df_grace.iloc[row_idx]["Grace Word"]
-    selected_from = "grace"
+    search_triggered = True
 
 if sin_selection.selection and sin_selection.selection.rows:
     row_idx = sin_selection.selection.rows[0]
     selected_word = df_sin.iloc[row_idx]["Sin Word"]
-    selected_from = "sin"
+    search_triggered = True
 
-if selected_word:
-    target_container = grace_results_container if selected_from == "grace" else sin_results_container
+# Normal search button
+if search_clicked and search_word:
+    selected_word = search_word
+    search_triggered = True
 
-    with target_container:
-        with st.spinner(f"Searching for “{selected_word}”..."):
-            results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
+# ====================== PERFORM SEARCH ======================
+if search_triggered and selected_word:
+    # Clear previous table selections FIRST
+    if "grace_table" in st.session_state:
+        st.session_state.grace_table = {"selection": {"rows": []}}
+    if "sin_table" in st.session_state:
+        st.session_state.sin_table = {"selection": {"rows": []}}
 
-        if results:
-            st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-            definition = get_word_definition(selected_word)
-            st.info(f"**📖 Dictionary Definition of '{selected_word}':** {definition}")
-
-            # Summary
-            summary = generate_search_summary(selected_word, results)
-            if summary:
-                st.markdown("### 📝 Spiritual Summary")
-                st.markdown(summary)
-
-            # Download button
-            doc = Document()
-            for section in doc.sections:
-                section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-
-            # Top banner in docx
-            if os.path.exists("Newest banner.png"):
-                doc.add_picture("Newest banner.png", width=Inches(6.5))
-
-            doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
-
-            # Dictionary Definition early
-            doc.add_heading("Dictionary Definition", level=2)
-            doc.add_paragraph(f"{selected_word}: {definition}")
-
-            # Spiritual Summary comes early (as requested)
-            if summary:
-                doc.add_heading("Spiritual Summary", level=2)
-                doc.add_paragraph(summary)
-
-            # Then the actual messages
-            for res in results:
-                doc.add_paragraph(res["file"], style='Heading 3')
-                p = doc.add_paragraph(res["text"])
-                for run in p.runs: run.italic = True
-
-            # Bottom banner in docx
-            if os.path.exists("Bottom banner Std.png"):
-                doc.add_picture("Bottom banner Std.png", width=Inches(6.5))
-
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-                doc.save(tmp.name)
-                with open(tmp.name, "rb") as f:
-                    st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {selected_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-
-            # Results display
-            st.subheader("📋 Search Results")
-            for res in results:
-                highlighted = re.sub(rf'(?<!\w){re.escape(selected_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_word}</span>', res['text'], flags=re.IGNORECASE)
-                with st.expander(f"📄 {res['file']}", expanded=True):
-                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
-        else:
-            st.info("No matches found.")
-
-# ====================== NORMAL SEARCH BUTTON ======================
-elif search_clicked and search_word:
-    with st.spinner(f"Searching for “{search_word}”..."):
-        results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+    with st.spinner(f"Searching for “{selected_word}”..."):
+        results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
 
     if results:
         st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-        definition = get_word_definition(search_word)
-        st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
+        definition = get_word_definition(selected_word)
+        st.info(f"**📖 Dictionary Definition of '{selected_word}':** {definition}")
 
-        summary = generate_search_summary(search_word, results)
-        if summary:
-            st.markdown("### 📝 Spiritual Summary")
-            st.markdown(summary)
+        # Generate Summary
+        summary = generate_search_summary(selected_word, results)
 
-        # Download + results display (same as above, simplified for brevity)
+        # Show Summary first
+        st.markdown("### 📝 Spiritual Summary")
+        st.markdown(summary)
+
+        # Download button right after Summary
         doc = Document()
         for section in doc.sections:
             section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
 
+        section = doc.sections[0]
+        usable_width = section.page_width - section.left_margin - section.right_margin
+
+        # Top banner in docx (full width)
         if os.path.exists("Newest banner.png"):
-            doc.add_picture("Newest banner.png", width=Inches(6.5))
+            doc.add_picture("Newest banner.png", width=usable_width)
 
-        doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
+        doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
+        doc.add_paragraph(f"Dictionary Definition: {definition}")
 
-        # Dictionary Definition early
-        doc.add_heading("Dictionary Definition", level=2)
-        doc.add_paragraph(f"{search_word}: {definition}")
+        # Summary in docx
+        doc.add_heading("Spiritual Summary", level=2)
+        doc.add_paragraph(summary)
 
-        # Spiritual Summary comes early (as requested)
-        if summary:
-            doc.add_heading("Spiritual Summary", level=2)
-            doc.add_paragraph(summary)
-
-        # Then the actual messages
         for res in results:
             doc.add_paragraph(res["file"], style='Heading 3')
             p = doc.add_paragraph(res["text"])
-            for run in p.runs: run.italic = True
+            for run in p.runs:
+                run.italic = True
 
+        # Bottom banner in docx (full width)
         if os.path.exists("Bottom banner Std.png"):
-            doc.add_picture("Bottom banner Std.png", width=Inches(6.5))
+            doc.add_picture("Bottom banner Std.png", width=usable_width)
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
             doc.save(tmp.name)
             with open(tmp.name, "rb") as f:
-                st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {search_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {selected_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
+        # Results after download button
         st.subheader("📋 Search Results")
         for res in results:
-            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
+            highlighted = re.sub(rf'(?<!\w){re.escape(selected_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_word}</span>', res['text'], flags=re.IGNORECASE)
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
     else:
         st.info("No matches found.")
 
-# ====================== BOTTOM BANNER ======================
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
