@@ -245,6 +245,11 @@ Jesus also speaks frequently about the reality of spiritual warfare. He warns th
 
 Above all, these messages reveal the great mercy and patience of Jesus. Even when He corrects or warns about **{search_word}**, He does so with love and a desire to draw souls closer to Himself. He offers hope, healing, and the grace needed to overcome. The consistent message is one of invitation — an invitation to greater freedom, deeper love, and a more intimate walk with Him."""
 
+    # Add the requested closing sentence to every summary
+    summary += """
+
+I hope this message has helped you today, may the Lord Jesus Christ Bless you and keep you each and every day"""
+
     return summary.strip()
 
 # ====================== MAIN UI ======================
