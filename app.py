@@ -30,7 +30,6 @@ if dark_mode:
     <style>
         .stApp { background: linear-gradient(135deg, #1F1A24 0%, #2A1F35 100%); }
         .main .block-container { background: rgba(42, 37, 51, 0.92) !important; backdrop-filter: blur(22px); border-radius: 28px; padding: 2.8rem 2.2rem; }
-
         .fancy-header, .fancy-white {
             font-family: 'Playfair Display', serif;
             font-weight: 700;
@@ -78,9 +77,12 @@ else:
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
+# ====================== WORD LISTS (your full lists) ======================
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
+
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
 
+# ====================== ALL YOUR FUNCTIONS ======================
 def get_sin_frequencies():
     freq = {}
     if os.path.exists("sin_word_library.json"):
@@ -204,80 +206,141 @@ def build_grace_word_analysis():
     with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
     return grace_data
 
-# ==================== UI ====================
+# ====================== MAIN UI ======================
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
 st.markdown('<div class="fancy-white">Enter a word or phrase here or select from Graces or Sins listed Below</div>', unsafe_allow_html=True)
 
-search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed")
+search_word = st.text_input("Search term", placeholder="e.g. rapture, love, faith (typos ok)", label_visibility="collapsed", key="search_input")
 
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-if search_clicked and search_word:
-    with st.spinner("Searching messages..."):
+# ====================== GRACES TABLE ======================
+st.markdown("---")
+st.markdown('<h3 class="fancy-header">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
+
+if not os.path.exists("grace_word_library.json"):
+    with st.spinner("Building Grace frequency cache..."):
+        build_grace_word_analysis()
+
+grace_frequencies = get_grace_frequencies()
+df_grace = pd.DataFrame([{"Grace Word": word, "Frequency": grace_frequencies.get(word, 0)} for word in sorted(GRACE_WORDS)])
+df_grace = df_grace.sort_values("Frequency", ascending=False)
+
+grace_selection = st.dataframe(
+    df_grace,
+    column_config={"Frequency": st.column_config.ProgressColumn("Frequency of usage in all messages", min_value=0, max_value=max(grace_frequencies.values()) if grace_frequencies else 500, format="%d")},
+    use_container_width=True,
+    hide_index=True,
+    on_select="rerun",
+    selection_mode="single-row",
+    key="grace_table"
+)
+
+# ====================== SINS TABLE ======================
+st.markdown("---")
+st.markdown('<h3 class="fancy-header">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
+st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
+
+if not os.path.exists("sin_word_library.json"):
+    with st.spinner("Building Sins frequency cache..."):
+        build_sin_word_analysis()
+
+sin_frequencies = get_sin_frequencies()
+df_sin = pd.DataFrame([{"Sin Word": word, "Frequency": sin_frequencies.get(word, 0)} for word in sorted(SIN_WORDS)])
+df_sin = df_sin.sort_values("Frequency", ascending=False)
+
+sin_selection = st.dataframe(
+    df_sin,
+    column_config={"Frequency": st.column_config.ProgressColumn("Frequency of usage in all messages", min_value=0, max_value=max(sin_frequencies.values()) if sin_frequencies else 438, format="%d")},
+    use_container_width=True,
+    hide_index=True,
+    on_select="rerun",
+    selection_mode="single-row",
+    key="sin_table"
+)
+
+# ====================== AUTO SEARCH FROM TABLE CLICK ======================
+selected_word = None
+
+if grace_selection.selection and grace_selection.selection.rows:
+    row_idx = grace_selection.selection.rows[0]
+    selected_word = df_grace.iloc[row_idx]["Grace Word"]
+
+if sin_selection.selection and sin_selection.selection.rows:
+    row_idx = sin_selection.selection.rows[0]
+    selected_word = df_sin.iloc[row_idx]["Sin Word"]
+
+if selected_word:
+    with st.spinner(f"Searching for “{selected_word}”..."):
+        results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
+
+    if results:
+        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+        definition = get_word_definition(selected_word)
+        st.info(f"**📖 Dictionary Definition of '{selected_word}':** {definition}")
+
+        doc = Document()
+        for section in doc.sections:
+            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
+        for res in results:
+            doc.add_paragraph(res["file"], style='Heading 3')
+            p = doc.add_paragraph(res["text"])
+            for run in p.runs: run.italic = True
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            doc.save(tmp.name)
+            with open(tmp.name, "rb") as f:
+                st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {selected_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+        st.subheader("📋 Search Results")
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(selected_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_word}</span>', res['text'], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+    else:
+        st.info("No matches found.")
+
+# ====================== NORMAL SEARCH BUTTON ======================
+elif search_clicked and search_word:
+    with st.spinner(f"Searching for “{search_word}”..."):
         results, file_count, match_count = search_italic_text(search_word, DOCX_FOLDER)
+
     if results:
         st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
         definition = get_word_definition(search_word)
         st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
+
         doc = Document()
-        for section in doc.sections: section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        for section in doc.sections:
+            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
         doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
         for res in results:
             doc.add_paragraph(res["file"], style='Heading 3')
             p = doc.add_paragraph(res["text"])
             for run in p.runs: run.italic = True
+
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
             doc.save(tmp.name)
             with open(tmp.name, "rb") as f:
                 st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {search_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
         results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
         st.subheader("📋 Search Results")
         for res in results:
             highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
             with st.expander(f"📄 {res['file']}", expanded=True):
                 st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+    else:
+        st.info("No matches found.")
 
-st.markdown("---")
-st.markdown('<h3 class="fancy-header">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
-st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
-
-if not os.path.exists("grace_word_library.json"):
-    st.markdown("⏳ **Building the Grace frequency cache for the first time...**", unsafe_allow_html=True)
-    with st.spinner("Scanning all messages for grace words..."):
-        build_grace_word_analysis()
-        st.success("✅ Grace frequency cache built successfully.")
-
-if not os.path.exists("sin_word_library.json"):
-    st.markdown("⏳ **Building the Sins frequency cache for the first time...**", unsafe_allow_html=True)
-    with st.spinner("Scanning all messages for sin words..."):
-        build_sin_word_analysis()
-        st.success("✅ Sins frequency cache built successfully.")
-
-grace_frequencies = get_grace_frequencies()
-sorted_graces = sorted(GRACE_WORDS)
-df_data_grace = [{"Grace Word": word, "Frequency": grace_frequencies.get(word, 0)} for word in sorted_graces]
-df_grace = pd.DataFrame(df_data_grace)
-df_grace = df_grace.sort_values("Frequency", ascending=False)
-column_config_grace = {"Frequency": st.column_config.ProgressColumn("Frequency of usage in all messages", min_value=0, max_value=max(grace_frequencies.values()) if grace_frequencies else 500, format="%d")}
-st.dataframe(df_grace, column_config=column_config_grace, use_container_width=True, hide_index=True, on_select="rerun", selection_mode="single-row")
-
-st.markdown("---")
-st.markdown('<h3 class="fancy-header">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
-st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
-
-sin_frequencies = get_sin_frequencies()
-sorted_sins = sorted(SIN_WORDS)
-df_data_sin = [{"Sin Word": sin, "Frequency": sin_frequencies.get(sin, 0)} for sin in sorted_sins]
-df_sin = pd.DataFrame(df_data_sin)
-df_sin = df_sin.sort_values("Frequency", ascending=False)
-column_config_sin = {"Frequency": st.column_config.ProgressColumn("Frequency of usage in all messages", min_value=0, max_value=max(sin_frequencies.values()) if sin_frequencies else 438, format="%d")}
-st.dataframe(df_sin, column_config=column_config_sin, use_container_width=True, hide_index=True, on_select="rerun", selection_mode="single-row")
-
-st.markdown("---")
+# ====================== BOTTOM BANNER ======================
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
