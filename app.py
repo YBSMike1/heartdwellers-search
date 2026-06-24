@@ -347,9 +347,10 @@ if search_triggered and selected_word:
         for section in doc.sections:
             section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
 
-        # Add Top Banner
+        # Add Top Banner (Full Width)
         if os.path.exists("Newest banner.png"):
-            doc.add_picture("Newest banner.png", width=Inches(6.5))
+            usable_width = section.page_width.inches - section.left_margin.inches - section.right_margin.inches
+            doc.add_picture("Newest banner.png", width=Inches(usable_width))
 
         doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
         doc.add_paragraph(f"Dictionary Definition: {definition}")
@@ -363,9 +364,10 @@ if search_triggered and selected_word:
             p = doc.add_paragraph(res["text"])
             for run in p.runs: run.italic = True
 
-        # Add Bottom Banner
+        # Add Bottom Banner (Full Width)
         if os.path.exists("Bottom banner Std.png"):
-            doc.add_picture("Bottom banner Std.png", width=Inches(6.5))
+            usable_width = section.page_width.inches - section.left_margin.inches - section.right_margin.inches
+            doc.add_picture("Bottom banner Std.png", width=Inches(usable_width))
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
             doc.save(tmp.name)
