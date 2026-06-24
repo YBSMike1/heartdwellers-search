@@ -77,10 +77,12 @@ else:
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
+# ====================== WORD LISTS ======================
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
 
+# ====================== FUNCTIONS (your original ones) ======================
 def get_sin_frequencies():
     freq = {}
     if os.path.exists("sin_word_library.json"):
@@ -204,7 +206,7 @@ def build_grace_word_analysis():
     with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
     return grace_data
 
-# ====================== UI ======================
+# ====================== MAIN UI ======================
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
@@ -262,17 +264,17 @@ sin_table = st.dataframe(
     key="sin_table"
 )
 
-# ====================== AUTO SEARCH ON TABLE SELECTION ======================
-if st.session_state.get("grace_table") and st.session_state.grace_table.get("selection", {}).get("rows"):
-    row_idx = st.session_state.grace_table["selection"]["rows"][0]
-    selected_word = df_grace.iloc[row_idx]["Grace Word"]
+# ====================== AUTO SEARCH ======================
+if st.session_state.get("grace_table", {}).get("selection", {}).get("rows"):
+    row = st.session_state.grace_table["selection"]["rows"][0]
+    selected_word = df_grace.iloc[row]["Grace Word"]
     st.session_state.search_input = selected_word
     st.session_state.search_trigger = selected_word
     st.rerun()
 
-if st.session_state.get("sin_table") and st.session_state.sin_table.get("selection", {}).get("rows"):
-    row_idx = st.session_state.sin_table["selection"]["rows"][0]
-    selected_word = df_sin.iloc[row_idx]["Sin Word"]
+if st.session_state.get("sin_table", {}).get("selection", {}).get("rows"):
+    row = st.session_state.sin_table["selection"]["rows"][0]
+    selected_word = df_sin.iloc[row]["Sin Word"]
     st.session_state.search_input = selected_word
     st.session_state.search_trigger = selected_word
     st.rerun()
