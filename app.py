@@ -77,12 +77,10 @@ else:
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
-# Your SIN_WORDS and GRACE_WORDS lists (kept from your code)
-SIN_WORDS = ["adultery", "anger", ...]  # (your full list)
-GRACE_WORDS = ["love", "charity", ...]  # (your full list)
+SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 
-# ====================== ALL YOUR EXISTING FUNCTIONS ======================
-# (I kept all your functions exactly as you provided them)
+GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
+
 def get_sin_frequencies():
     freq = {}
     if os.path.exists("sin_word_library.json"):
@@ -105,10 +103,108 @@ def get_grace_frequencies():
         except: pass
     return freq
 
-# ... (all your other functions: get_word_definition, extract_date_from_path, search_file, search_italic_text, build_sin_word_analysis, build_grace_word_analysis) 
-# Please keep them exactly as they are in your current file.
+def get_word_definition(word):
+    if not word or len(word) < 2: return "Please enter a valid word."
+    try:
+        url = f"https://wordsapiv1.p.rapidapi.com/words/{word.lower()}/definitions"
+        headers = {'x-rapidapi-key': "e10c87331emshb838f6dd5aeb4e8p1a63dbjsn139eec4460a9", 'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"}
+        response = requests.get(url, headers=headers, timeout=8)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("definitions") and len(data["definitions"]) > 0:
+                return data["definitions"][0].get("definition", "No definition found.")
+        return "No definition found for this word."
+    except:
+        return "Definition not available at this time."
 
-# ====================== MAIN UI ======================
+def extract_date_from_path(file_path):
+    try:
+        match = re.search(r'(\w+\s+\d{4})', file_path)
+        if match: return datetime.strptime(match.group(1), "%b %Y")
+    except: pass
+    return datetime.min
+
+def search_file(file_path, search_word):
+    try:
+        doc = Document(file_path)
+        pattern = re.compile(rf'(?<!\w){re.escape(search_word)}(?!\w)', re.IGNORECASE)
+        for p in doc.paragraphs:
+            italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+            if italic_text and pattern.search(italic_text):
+                return {"file": os.path.relpath(file_path, DOCX_FOLDER), "text": italic_text.strip()}
+    except: pass
+    return None
+
+def search_italic_text(search_word, folder_path):
+    results = []
+    file_count = 0
+    match_count = 0
+    if not os.path.exists(folder_path): return [], 0, 0
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    start_time = time.time()
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(folder_path) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+    total_files = len(all_files)
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        future_to_file = {executor.submit(search_file, f, search_word): f for f in all_files}
+        for i, future in enumerate(as_completed(future_to_file)):
+            result = future.result()
+            if result:
+                results.append(result)
+                match_count += 1
+            file_count += 1
+            progress = (i + 1) / max(total_files, 1)
+            progress_bar.progress(progress)
+            elapsed = time.time() - start_time
+            files_remaining = total_files - (i + 1)
+            eta_str = f"~{int((elapsed / (i + 1)) * files_remaining)}s" if files_remaining > 0 else ""
+            percent = int(progress * 100)
+            status_text.markdown(f"**Searching** {i+1:,} / {total_files:,} files • **{percent}%** • {eta_str} remaining")
+    progress_bar.progress(1.0)
+    status_text.empty()
+    return results, file_count, match_count
+
+def build_sin_word_analysis():
+    from collections import Counter
+    sin_counter = Counter()
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+    for file_path in all_files:
+        try:
+            doc = Document(file_path)
+            for p in doc.paragraphs:
+                italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+                if italic_text:
+                    words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
+                    for word in words:
+                        if word in SIN_WORDS: sin_counter[word] += 1
+        except: continue
+    total = sum(sin_counter.values())
+    ranked = [{"Rank": rank, "Sin Word": word, "Frequency": freq, "% of Sin Mentions": round((freq / total * 100) if total > 0 else 0, 2)} for rank, (word, freq) in enumerate(sin_counter.most_common(), 1)]
+    sin_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(all_files), "total_sin_occurrences": total, "sin_words": ranked}
+    with open("sin_word_library.json", "w", encoding="utf-8") as f: json.dump(sin_data, f, indent=2)
+    return sin_data
+
+def build_grace_word_analysis():
+    from collections import Counter
+    grace_counter = Counter()
+    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+    for file_path in all_files:
+        try:
+            doc = Document(file_path)
+            for p in doc.paragraphs:
+                italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+                if italic_text:
+                    words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
+                    for word in words:
+                        if word in GRACE_WORDS: grace_counter[word] += 1
+        except: continue
+    total = sum(grace_counter.values())
+    ranked = [{"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round((freq / total * 100) if total > 0 else 0, 2)} for rank, (word, freq) in enumerate(grace_counter.most_common(), 1)]
+    grace_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(all_files), "total_grace_occurrences": total, "grace_words": ranked}
+    with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
+    return grace_data
+
+# ====================== UI ======================
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
@@ -120,7 +216,7 @@ col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-# ====================== TABLES WITH AUTO-SEARCH ======================
+# Graces Table
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
@@ -143,14 +239,7 @@ grace_table = st.dataframe(
     key="grace_table"
 )
 
-# Auto-search for Graces
-if grace_table and "selection" in grace_table and grace_table["selection"].get("rows"):
-    selected_idx = grace_table["selection"]["rows"][0]
-    selected_word = df_grace.iloc[selected_idx]["Grace Word"]
-    st.session_state.search_input = selected_word
-    st.session_state.search_trigger = selected_word
-    st.rerun()
-
+# Sins Table
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
@@ -173,15 +262,22 @@ sin_table = st.dataframe(
     key="sin_table"
 )
 
-# Auto-search for Sins
-if sin_table and "selection" in sin_table and sin_table["selection"].get("rows"):
-    selected_idx = sin_table["selection"]["rows"][0]
-    selected_word = df_sin.iloc[selected_idx]["Sin Word"]
+# ====================== AUTO SEARCH ON TABLE SELECTION ======================
+if st.session_state.get("grace_table") and st.session_state.grace_table.get("selection", {}).get("rows"):
+    row_idx = st.session_state.grace_table["selection"]["rows"][0]
+    selected_word = df_grace.iloc[row_idx]["Grace Word"]
     st.session_state.search_input = selected_word
     st.session_state.search_trigger = selected_word
     st.rerun()
 
-# ====================== SEARCH EXECUTION ======================
+if st.session_state.get("sin_table") and st.session_state.sin_table.get("selection", {}).get("rows"):
+    row_idx = st.session_state.sin_table["selection"]["rows"][0]
+    selected_word = df_sin.iloc[row_idx]["Sin Word"]
+    st.session_state.search_input = selected_word
+    st.session_state.search_trigger = selected_word
+    st.rerun()
+
+# ====================== PERFORM SEARCH ======================
 if (search_clicked and search_word) or st.session_state.get("search_trigger"):
     term = st.session_state.get("search_trigger") or search_word
     with st.spinner(f"Searching for “{term}”..."):
@@ -189,12 +285,32 @@ if (search_clicked and search_word) or st.session_state.get("search_trigger"):
 
     if results:
         st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-        # ... (keep your existing result display and download code here)
-        # (I left your original result rendering logic intact)
+        definition = get_word_definition(term)
+        st.info(f"**📖 Dictionary Definition of '{term}':** {definition}")
+
+        doc = Document()
+        for section in doc.sections:
+            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        doc.add_heading(f'What did Jesus teach us about "{term}"?', level=1)
+        for res in results:
+            doc.add_paragraph(res["file"], style='Heading 3')
+            p = doc.add_paragraph(res["text"])
+            for run in p.runs: run.italic = True
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+            doc.save(tmp.name)
+            with open(tmp.name, "rb") as f:
+                st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {term}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
+        st.subheader("📋 Search Results")
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(term)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{term}</span>', res['text'], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
     else:
         st.info("No matches found.")
 
-# Bottom banner and caption
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
 
