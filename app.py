@@ -206,18 +206,11 @@ def build_grace_word_analysis():
     with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
     return grace_data
 
-# ====================== NEW: GENERATE SPIRITUAL SUMMARY ======================
 def generate_search_summary(search_word, results):
-    """
-    Generates a 4-6 paragraph spiritual summary based on the actual search results.
-    It tries to identify recurring themes from the messages.
-    """
     if not results:
         return ""
-
     all_text = " ".join([r["text"].lower() for r in results])
     total = len(results)
-
     themes = []
     if any(w in all_text for w in ["humble", "humility", "lowly"]):
         themes.append("humility and lowering oneself before God")
@@ -237,7 +230,6 @@ def generate_search_summary(search_word, results):
         themes.append("overcoming fear through trust in God")
 
     summary = f"""In the messages Jesus gave to Mother Clare, the word **{search_word}** appears in {total} different passages. """
-
     if themes:
         summary += f"These passages frequently touch on themes such as **{', '.join(themes)}**. "
     else:
@@ -267,7 +259,7 @@ col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     search_clicked = st.button("🔍 Search", type="primary", use_container_width=True)
 
-# Graces Table
+# ====================== GRACES TABLE ======================
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
@@ -290,7 +282,10 @@ grace_selection = st.dataframe(
     key="grace_table"
 )
 
-# Sins Table
+# Container for Graces results (placed right after the Graces table)
+grace_results_container = st.container()
+
+# ====================== SINS TABLE ======================
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
@@ -313,67 +308,83 @@ sin_selection = st.dataframe(
     key="sin_table"
 )
 
+# Container for Sins results (placed right after the Sins table)
+sin_results_container = st.container()
+
 # ====================== AUTO SEARCH FROM TABLE ======================
 selected_word = None
+selected_from = None
 
 if grace_selection.selection and grace_selection.selection.rows:
     row_idx = grace_selection.selection.rows[0]
     selected_word = df_grace.iloc[row_idx]["Grace Word"]
+    selected_from = "grace"
 
 if sin_selection.selection and sin_selection.selection.rows:
     row_idx = sin_selection.selection.rows[0]
     selected_word = df_sin.iloc[row_idx]["Sin Word"]
+    selected_from = "sin"
 
 if selected_word:
-    with st.spinner(f"Searching for “{selected_word}”..."):
-        results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
+    target_container = grace_results_container if selected_from == "grace" else sin_results_container
 
-    if results:
-        st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
-        definition = get_word_definition(selected_word)
-        st.info(f"**📖 Dictionary Definition of '{selected_word}':** {definition}")
+    with target_container:
+        with st.spinner(f"Searching for “{selected_word}”..."):
+            results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
 
-        # Display results
-        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-        st.subheader("📋 Search Results")
-        for res in results:
-            highlighted = re.sub(rf'(?<!\w){re.escape(selected_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_word}</span>', res['text'], flags=re.IGNORECASE)
-            with st.expander(f"📄 {res['file']}", expanded=True):
-                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+        if results:
+            st.success(f"✅ Found {match_count:,} matches in {file_count:,} files.")
+            definition = get_word_definition(selected_word)
+            st.info(f"**📖 Dictionary Definition of '{selected_word}':** {definition}")
 
-        # ====================== SPIRITUAL SUMMARY ON WEBPAGE ======================
-        summary = generate_search_summary(selected_word, results)
-        if summary:
-            st.markdown("---")
-            st.markdown("### 📝 Spiritual Summary")
-            st.markdown(summary)
+            # Summary
+            summary = generate_search_summary(selected_word, results)
+            if summary:
+                st.markdown("### 📝 Spiritual Summary")
+                st.markdown(summary)
 
-        # Download button with Dictionary + Summary
-        doc = Document()
-        for section in doc.sections:
-            section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
-        doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
-        for res in results:
-            doc.add_paragraph(res["file"], style='Heading 3')
-            p = doc.add_paragraph(res["text"])
-            for run in p.runs: run.italic = True
+            # Download button
+            doc = Document()
+            for section in doc.sections:
+                section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
 
-        # Add Dictionary to doc
-        doc.add_heading("Dictionary Definition", level=2)
-        doc.add_paragraph(definition)
+            # Top banner in docx
+            if os.path.exists("Newest banner.png"):
+                doc.add_picture("Newest banner.png", width=Inches(6.5))
 
-        # Add Summary to doc
-        if summary:
-            doc.add_heading("Spiritual Summary", level=2)
-            doc.add_paragraph(summary)
+            doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
-            doc.save(tmp.name)
-            with open(tmp.name, "rb") as f:
-                st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {selected_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            for res in results:
+                doc.add_paragraph(res["file"], style='Heading 3')
+                p = doc.add_paragraph(res["text"])
+                for run in p.runs: run.italic = True
 
-    else:
-        st.info("No matches found.")
+            # Dictionary in docx
+            doc.add_heading("Dictionary Definition", level=2)
+            doc.add_paragraph(f"{selected_word}: {definition}")
+
+            # Summary in docx
+            if summary:
+                doc.add_heading("Spiritual Summary", level=2)
+                doc.add_paragraph(summary)
+
+            # Bottom banner in docx
+            if os.path.exists("Bottom banner Std.png"):
+                doc.add_picture("Bottom banner Std.png", width=Inches(6.5))
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
+                doc.save(tmp.name)
+                with open(tmp.name, "rb") as f:
+                    st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {selected_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+            # Results display
+            st.subheader("📋 Search Results")
+            for res in results:
+                highlighted = re.sub(rf'(?<!\w){re.escape(selected_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{selected_word}</span>', res['text'], flags=re.IGNORECASE)
+                with st.expander(f"📄 {res['file']}", expanded=True):
+                    st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
+        else:
+            st.info("No matches found.")
 
 # ====================== NORMAL SEARCH BUTTON ======================
 elif search_clicked and search_word:
@@ -385,42 +396,40 @@ elif search_clicked and search_word:
         definition = get_word_definition(search_word)
         st.info(f"**📖 Dictionary Definition of '{search_word}':** {definition}")
 
-        results.sort(key=lambda x: extract_date_from_path(x["file"]), reverse=True)
-        st.subheader("📋 Search Results")
-        for res in results:
-            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
-            with st.expander(f"📄 {res['file']}", expanded=True):
-                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
-
-        # ====================== SPIRITUAL SUMMARY ON WEBPAGE ======================
         summary = generate_search_summary(search_word, results)
         if summary:
-            st.markdown("---")
             st.markdown("### 📝 Spiritual Summary")
             st.markdown(summary)
 
-        # Download button with Dictionary + Summary
+        # Download + results display (same as above, simplified for brevity)
         doc = Document()
         for section in doc.sections:
             section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        if os.path.exists("Newest banner.png"):
+            doc.add_picture("Newest banner.png", width=Inches(6.5))
         doc.add_heading(f'What did Jesus teach us about "{search_word}"?', level=1)
         for res in results:
             doc.add_paragraph(res["file"], style='Heading 3')
             p = doc.add_paragraph(res["text"])
             for run in p.runs: run.italic = True
-
         doc.add_heading("Dictionary Definition", level=2)
-        doc.add_paragraph(definition)
-
+        doc.add_paragraph(f"{search_word}: {definition}")
         if summary:
             doc.add_heading("Spiritual Summary", level=2)
             doc.add_paragraph(summary)
+        if os.path.exists("Bottom banner Std.png"):
+            doc.add_picture("Bottom banner Std.png", width=Inches(6.5))
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
             doc.save(tmp.name)
             with open(tmp.name, "rb") as f:
                 st.download_button(label="📥 Download Full Report (Word Document)", data=f, file_name=f"Jesus speaks about {search_word}.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
+        st.subheader("📋 Search Results")
+        for res in results:
+            highlighted = re.sub(rf'(?<!\w){re.escape(search_word)}(?!\w)', f'<span style="background-color: #ffeb3b; color: black; font-weight: bold;">{search_word}</span>', res['text'], flags=re.IGNORECASE)
+            with st.expander(f"📄 {res['file']}", expanded=True):
+                st.markdown(f"""<div style="font-family: Calibri, Arial, sans-serif; font-size: 0.95em; line-height: 1.8; background-color: #241F2E; padding: 20px; border-radius: 12px; border-left: 6px solid #C4457A; color: #F5E6F0; font-style: italic;">{highlighted}</div>""", unsafe_allow_html=True)
     else:
         st.info("No matches found.")
 
