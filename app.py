@@ -82,7 +82,7 @@ SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter
 
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
 
-# ====================== AUTO CACHE DETECTION ======================
+# ====================== SMART CACHE DETECTION ======================
 def count_current_docx_files():
     if not os.path.exists(DOCX_FOLDER):
         return 0
@@ -97,10 +97,10 @@ def get_cached_file_count(json_file):
         return 0
 
 def should_rebuild_cache():
-    current = count_current_docx_files()
+    current_count = count_current_docx_files()
     sin_cached = get_cached_file_count("sin_word_library.json")
     grace_cached = get_cached_file_count("grace_word_library.json")
-    return current != sin_cached or current != grace_cached
+    return current_count != sin_cached or current_count != grace_cached
 
 # ====================== FUNCTIONS ======================
 def get_sin_frequencies():
@@ -138,13 +138,6 @@ def get_word_definition(word):
         return "No definition found for this word."
     except:
         return "Definition not available at this time."
-
-def extract_date_from_path(file_path):
-    try:
-        match = re.search(r'(\w+\s+\d{4})', file_path)
-        if match: return datetime.strptime(match.group(1), "%b %Y")
-    except: pass
-    return datetime.min
 
 def search_file(file_path, search_word):
     try:
@@ -254,7 +247,7 @@ Above all, these messages reveal the great mercy and patience of Jesus. Even whe
 I hope this message has helped you today, may the Lord Jesus Christ Bless you and keep you each and every day."""
     return summary.strip()
 
-# ====================== AUTO REBUILD CACHE IF NEEDED ======================
+# ====================== AUTO REBUILD IF NEEDED ======================
 if should_rebuild_cache():
     if os.path.exists("sin_word_library.json"):
         os.remove("sin_word_library.json")
