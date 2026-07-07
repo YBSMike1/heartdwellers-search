@@ -82,34 +82,47 @@ SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter
 
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
 
-# ====================== SMART CACHE DETECTION (only once per load) ======================
-def count_current_docx_files():
-    if not os.path.exists(DOCX_FOLDER):
-        return 0
-    return len([f for f in os.listdir(DOCX_FOLDER) if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])])
+# ====================== STABLE CACHE LOGIC ======================
+# Only rebuild if the cache files are missing (much more stable)
+if not os.path.exists("sin_word_library.json"):
+    with st.spinner("Building Sin frequency cache..."):
+        from collections import Counter
+        sin_counter = Counter()
+        all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+        for file_path in all_files:
+            try:
+                doc = Document(file_path)
+                for p in doc.paragraphs:
+                    italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+                    if italic_text:
+                        words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
+                        for word in words:
+                            if word in SIN_WORDS: sin_counter[word] += 1
+            except: continue
+        total = sum(sin_counter.values())
+        ranked = [{"Rank": rank, "Sin Word": word, "Frequency": freq, "% of Sin Mentions": round((freq / total * 100) if total > 0 else 0, 2)} for rank, (word, freq) in enumerate(sin_counter.most_common(), 1)]
+        sin_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(all_files), "total_sin_occurrences": total, "sin_words": ranked}
+        with open("sin_word_library.json", "w", encoding="utf-8") as f: json.dump(sin_data, f, indent=2)
 
-def get_cached_file_count(json_file):
-    try:
-        with open(json_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data.get("total_messages_scanned", 0)
-    except:
-        return 0
-
-def should_rebuild_cache():
-    current = count_current_docx_files()
-    sin_cached = get_cached_file_count("sin_word_library.json")
-    grace_cached = get_cached_file_count("grace_word_library.json")
-    return current != sin_cached or current != grace_cached
-
-# Only run the expensive check once per page load (not on every widget click)
-if "cache_checked" not in st.session_state:
-    if should_rebuild_cache():
-        if os.path.exists("sin_word_library.json"):
-            os.remove("sin_word_library.json")
-        if os.path.exists("grace_word_library.json"):
-            os.remove("grace_word_library.json")
-    st.session_state.cache_checked = True
+if not os.path.exists("grace_word_library.json"):
+    with st.spinner("Building Grace frequency cache..."):
+        from collections import Counter
+        grace_counter = Counter()
+        all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
+        for file_path in all_files:
+            try:
+                doc = Document(file_path)
+                for p in doc.paragraphs:
+                    italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
+                    if italic_text:
+                        words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
+                        for word in words:
+                            if word in GRACE_WORDS: grace_counter[word] += 1
+            except: continue
+        total = sum(grace_counter.values())
+        ranked = [{"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round((freq / total * 100) if total > 0 else 0, 2)} for rank, (word, freq) in enumerate(grace_counter.most_common(), 1)]
+        grace_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(all_files), "total_grace_occurrences": total, "grace_words": ranked}
+        with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
 
 # ====================== FUNCTIONS ======================
 def get_sin_frequencies():
@@ -188,46 +201,6 @@ def search_italic_text(search_word, folder_path):
     status_text.empty()
     return results, file_count, match_count
 
-def build_sin_word_analysis():
-    from collections import Counter
-    sin_counter = Counter()
-    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
-    for file_path in all_files:
-        try:
-            doc = Document(file_path)
-            for p in doc.paragraphs:
-                italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
-                if italic_text:
-                    words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
-                    for word in words:
-                        if word in SIN_WORDS: sin_counter[word] += 1
-        except: continue
-    total = sum(sin_counter.values())
-    ranked = [{"Rank": rank, "Sin Word": word, "Frequency": freq, "% of Sin Mentions": round((freq / total * 100) if total > 0 else 0, 2)} for rank, (word, freq) in enumerate(sin_counter.most_common(), 1)]
-    sin_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(all_files), "total_sin_occurrences": total, "sin_words": ranked}
-    with open("sin_word_library.json", "w", encoding="utf-8") as f: json.dump(sin_data, f, indent=2)
-    return sin_data
-
-def build_grace_word_analysis():
-    from collections import Counter
-    grace_counter = Counter()
-    all_files = [os.path.join(root, f) for root, _, files in os.walk(DOCX_FOLDER) for f in files if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])]
-    for file_path in all_files:
-        try:
-            doc = Document(file_path)
-            for p in doc.paragraphs:
-                italic_text = "".join(run.text for run in p.runs if getattr(run, 'italic', False))
-                if italic_text:
-                    words = re.findall(r'\b[a-zA-Z]+\b', italic_text.lower())
-                    for word in words:
-                        if word in GRACE_WORDS: grace_counter[word] += 1
-        except: continue
-    total = sum(grace_counter.values())
-    ranked = [{"Rank": rank, "Grace Word": word, "Frequency": freq, "% of Grace Mentions": round((freq / total * 100) if total > 0 else 0, 2)} for rank, (word, freq) in enumerate(grace_counter.most_common(), 1)]
-    grace_data = {"built_on": datetime.now().strftime("%Y-%m-%d %H:%M"), "total_messages_scanned": len(all_files), "total_grace_occurrences": total, "grace_words": ranked}
-    with open("grace_word_library.json", "w", encoding="utf-8") as f: json.dump(grace_data, f, indent=2)
-    return grace_data
-
 def generate_search_summary(search_word, results):
     if not results:
         return ""
@@ -273,10 +246,6 @@ st.markdown("---")
 st.markdown('<h3 class="fancy-header">✨ Browse Graces Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
 
-if not os.path.exists("grace_word_library.json"):
-    with st.spinner("Building Grace frequency cache..."):
-        build_grace_word_analysis()
-
 grace_frequencies = get_grace_frequencies()
 df_grace = pd.DataFrame([{"Grace Word": word, "Frequency": grace_frequencies.get(word, 0)} for word in sorted(GRACE_WORDS)])
 df_grace = df_grace.sort_values("Frequency", ascending=False)
@@ -295,10 +264,6 @@ grace_selection = st.dataframe(
 st.markdown("---")
 st.markdown('<h3 class="fancy-header">📖 Browse Sins Alphabetically (Most Used First)</h3>', unsafe_allow_html=True)
 st.markdown('<p style="text-align:center; font-weight:500; margin: 8px 0 16px 0;">Click in the box next to any word in the table below to search it instantly.</p>', unsafe_allow_html=True)
-
-if not os.path.exists("sin_word_library.json"):
-    with st.spinner("Building Sins frequency cache..."):
-        build_sin_word_analysis()
 
 sin_frequencies = get_sin_frequencies()
 df_sin = pd.DataFrame([{"Sin Word": word, "Frequency": sin_frequencies.get(word, 0)} for word in sorted(SIN_WORDS)])
