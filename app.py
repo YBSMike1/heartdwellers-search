@@ -77,10 +77,32 @@ else:
 DOCX_FOLDER = "Heartdwellers Docxs"
 spell = SpellChecker()
 
+# ====================== WORD LISTS ======================
 SIN_WORDS = ["adultery", "anger", "arrogance", "arrogant", "backbiting", "bitter", "bitterness", "blasphemous", "blasphemy", "boastful", "complaining", "contention", "covetousness", "deceit", "deception", "deceive", "discord", "division", "doubt", "doubting", "drunk", "envy", "envious", "falsehood", "fear", "fearful", "fornication", "fury", "gluttony", "gossip", "greed", "hate", "hatred", "haughty", "hypocrisy", "hypocrite", "idolatry", "idol", "idols", "idle", "jealous", "jealousy", "judging", "judgment", "judgmental", "lazy", "laziness", "lie", "lust", "lustful", "lying", "malice", "materialism", "murmuring", "occult", "offended", "offense", "pride", "proud", "rage", "rebellion", "rebellious", "revenge", "selfish", "selfishness", "slander", "sloth", "sorcery", "stealing", "strife", "stubborn", "stubbornness", "thief", "unbelief", "unforgiveness", "unforgiving", "vengeance", "witchcraft", "worldly", "worldliness", "wrath"]
 
 GRACE_WORDS = ["love", "charity", "compassion", "mercy", "grace", "faith", "hope", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control", "humility", "humbleness", "forgiveness", "forgive", "surrender", "trust", "obedience", "wisdom", "understanding", "prayer", "worship", "thanksgiving", "praise", "gratitude", "meekness", "longsuffering", "endurance", "perseverance", "steadfastness", "righteousness", "holiness", "purity", "truth", "honesty", "integrity", "generosity", "giving", "sharing", "hospitality", "service", "servant", "encouragement", "edification", "unity", "harmony", "reconciliation", "healing", "deliverance", "salvation", "redemption", "restoration", "blessing", "blessed", "anointing", "presence", "intimacy", "relationship", "abide", "remain", "dwell", "rest", "yield", "submit", "obey", "loving", "kind", "gentle", "patient", "faithful", "true", "pure", "holy", "humble", "forgiving", "grateful", "thankful", "peaceful", "joyful", "hopeful"]
 
+# ====================== AUTO CACHE DETECTION ======================
+def count_current_docx_files():
+    if not os.path.exists(DOCX_FOLDER):
+        return 0
+    return len([f for f in os.listdir(DOCX_FOLDER) if f.lower().endswith('.docx') and not any(s in f.lower() for s in ["compilation ", "~$", "eom", "all messages"])])
+
+def get_cached_file_count(json_file):
+    try:
+        with open(json_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data.get("total_messages_scanned", 0)
+    except:
+        return 0
+
+def should_rebuild_cache():
+    current = count_current_docx_files()
+    sin_cached = get_cached_file_count("sin_word_library.json")
+    grace_cached = get_cached_file_count("grace_word_library.json")
+    return current != sin_cached or current != grace_cached
+
+# ====================== FUNCTIONS ======================
 def get_sin_frequencies():
     freq = {}
     if os.path.exists("sin_word_library.json"):
@@ -210,44 +232,36 @@ def generate_search_summary(search_word, results):
     all_text = " ".join([r["text"].lower() for r in results])
     total = len(results)
     themes = []
-    if any(word in all_text for word in ["humble", "humility", "lowly"]):
-        themes.append("humility and lowering oneself before God")
-    if any(word in all_text for word in ["examine", "heart", "conscience", "self"]):
-        themes.append("self-examination and the condition of the heart")
-    if any(word in all_text for word in ["warfare", "battle", "enemy", "demon", "spiritual"]):
-        themes.append("spiritual warfare and resistance from the enemy")
-    if any(word in all_text for word in ["mercy", "forgive", "grace", "compassion"]):
-        themes.append("God’s mercy, forgiveness, and grace")
-    if any(word in all_text for word in ["pride", "proud", "arrogant", "selfish"]):
-        themes.append("the dangers of pride and self-reliance")
-    if any(word in all_text for word in ["love", "charity", "compassion"]):
-        themes.append("love, charity, and compassion toward others")
-    if any(word in all_text for word in ["obey", "obedience", "submit", "surrender"]):
-        themes.append("obedience and surrender to God’s will")
-    if any(word in all_text for word in ["fear", "afraid", "trust"]):
-        themes.append("overcoming fear through trust in God")
+    if any(w in all_text for w in ["humble", "humility", "lowly"]): themes.append("humility and lowering oneself before God")
+    if any(w in all_text for w in ["examine", "heart", "conscience"]): themes.append("self-examination and the condition of the heart")
+    if any(w in all_text for w in ["warfare", "battle", "enemy", "demon", "spiritual"]): themes.append("spiritual warfare and resistance from the enemy")
+    if any(w in all_text for w in ["mercy", "forgive", "grace", "compassion"]): themes.append("God’s mercy, forgiveness, and grace")
+    if any(w in all_text for w in ["pride", "proud", "arrogant", "selfish"]): themes.append("the dangers of pride and self-reliance")
+    if any(w in all_text for w in ["love", "charity", "compassion"]): themes.append("love, charity, and compassion toward others")
+    if any(w in all_text for w in ["obey", "obedience", "submit", "surrender"]): themes.append("obedience and surrender to God’s will")
+    if any(w in all_text for w in ["fear", "afraid", "trust"]): themes.append("overcoming fear through trust in God")
 
     summary = f"""In the messages Jesus gave to Mother Clare, the word **{search_word}** appears in {total} different passages. """
     if themes:
         summary += f"These passages frequently touch on themes such as **{', '.join(themes)}**. "
     else:
         summary += "These passages reveal important spiritual truths that Jesus desires His children to understand. "
-
     summary += f"""
-
 When Jesus speaks about **{search_word}**, He often does so with both tenderness and urgency. He calls His followers to examine their hearts honestly and to recognize how this particular struggle affects their relationship with Him and with others. The messages make it clear that growth in this area is not optional, but essential for those who wish to walk closely with the Lord.
-
 Many of the passages emphasize the need for humility and self-awareness. Jesus repeatedly shows that pride and self-reliance are major obstacles to receiving His grace. He invites souls to come low before Him, to acknowledge their weakness, and to allow Him to work deeply in their hearts. This is not meant to bring condemnation, but rather to open the door to genuine healing and freedom.
-
 Jesus also speaks frequently about the reality of spiritual warfare. He warns that the enemy often uses **{search_word}** as a foothold to discourage, distract, or lead souls away from intimacy with God. The messages encourage believers to stay vigilant in prayer, to remain close to Him, and to resist the lies of the enemy with truth and trust.
-
 Above all, these messages reveal the great mercy and patience of Jesus. Even when He corrects or warns about **{search_word}**, He does so with love and a desire to draw souls closer to Himself. He offers hope, healing, and the grace needed to overcome. The consistent message is one of invitation — an invitation to greater freedom, deeper love, and a more intimate walk with Him.
-
-I hope this message has helped you today, may the Lord Jesus Christ Bless you and keep you each and every day"""
-
+I hope this message has helped you today, may the Lord Jesus Christ Bless you and keep you each and every day."""
     return summary.strip()
 
-# ====================== UI ======================
+# ====================== AUTO REBUILD CACHE IF NEEDED ======================
+if should_rebuild_cache():
+    if os.path.exists("sin_word_library.json"):
+        os.remove("sin_word_library.json")
+    if os.path.exists("grace_word_library.json"):
+        os.remove("grace_word_library.json")
+
+# ====================== MAIN UI ======================
 if os.path.exists("Newest banner.png"):
     st.image("Newest banner.png", use_container_width=True)
 
@@ -305,7 +319,7 @@ sin_selection = st.dataframe(
     key="sin_table"
 )
 
-# ====================== AUTO SEARCH FROM TABLE ======================
+# ====================== CLEAR SELECTIONS FIRST, THEN SEARCH ======================
 selected_word = None
 search_triggered = False
 
@@ -325,6 +339,11 @@ if search_clicked and search_word:
 
 # ====================== PERFORM SEARCH ======================
 if search_triggered and selected_word:
+    if "grace_table" in st.session_state:
+        st.session_state.grace_table = {"selection": {"rows": []}}
+    if "sin_table" in st.session_state:
+        st.session_state.sin_table = {"selection": {"rows": []}}
+
     with st.spinner(f"Searching for “{selected_word}”..."):
         results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
 
@@ -335,16 +354,17 @@ if search_triggered and selected_word:
 
         summary = generate_search_summary(selected_word, results)
 
-        st.markdown("### 📖 Spiritual Summary")
+        st.markdown("### 📝 Spiritual Summary")
         st.markdown(summary)
 
         doc = Document()
         for section in doc.sections:
             section.top_margin = section.bottom_margin = section.left_margin = section.right_margin = Inches(0.5)
+        section = doc.sections[0]
+        usable_width = section.page_width - section.left_margin - section.right_margin
 
         if os.path.exists("Newest banner.png"):
-            usable_width = section.page_width.inches - section.left_margin.inches - section.right_margin.inches
-            doc.add_picture("Newest banner.png", width=Inches(usable_width))
+            doc.add_picture("Newest banner.png", width=usable_width)
 
         doc.add_heading(f'What did Jesus teach us about "{selected_word}"?', level=1)
         doc.add_paragraph(f"Dictionary Definition: {definition}")
@@ -355,11 +375,11 @@ if search_triggered and selected_word:
         for res in results:
             doc.add_paragraph(res["file"], style='Heading 3')
             p = doc.add_paragraph(res["text"])
-            for run in p.runs: run.italic = True
+            for run in p.runs:
+                run.italic = True
 
         if os.path.exists("Bottom banner Std.png"):
-            usable_width = section.page_width.inches - section.left_margin.inches - section.right_margin.inches
-            doc.add_picture("Bottom banner Std.png", width=Inches(usable_width))
+            doc.add_picture("Bottom banner Std.png", width=usable_width)
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp:
             doc.save(tmp.name)
@@ -376,9 +396,3 @@ if search_triggered and selected_word:
 
 if os.path.exists("Bottom banner Std.png"):
     st.image("Bottom banner Std.png", use_container_width=True)
-
-st.markdown("""
-<p style="text-align:center; color:#f8f9fa; font-size:0.95rem; margin-top:1.5rem;">
-    Built by Mike F. with love for our Heartdwellers family
-</p>
-""", unsafe_allow_html=True)
