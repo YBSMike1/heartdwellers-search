@@ -357,7 +357,7 @@ st.markdown("#### Admin Area")
 
 admin_password = st.text_input("Enter Admin Password", type="password", key="admin_pass")
 
-if admin_password == "heartdwellersrebuild":   # ← Change this password to whatever you want
+if admin_password == "21122112":   # ← Change this password to whatever you want
     if st.button("🔄 Rebuild Cache Now", type="secondary"):
         with st.spinner("Deleting old caches..."):
             if os.path.exists("sin_word_library.json"):
