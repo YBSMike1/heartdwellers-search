@@ -319,7 +319,7 @@ sin_selection = st.dataframe(
     key="sin_table"
 )
 
-# ====================== CLEAR SELECTIONS FIRST, THEN SEARCH ======================
+# ====================== DETECT TABLE CLICKS ======================
 selected_word = None
 search_triggered = False
 
@@ -339,11 +339,6 @@ if search_clicked and search_word:
 
 # ====================== PERFORM SEARCH ======================
 if search_triggered and selected_word:
-    if "grace_table" in st.session_state:
-        st.session_state.grace_table = {"selection": {"rows": []}}
-    if "sin_table" in st.session_state:
-        st.session_state.sin_table = {"selection": {"rows": []}}
-
     with st.spinner(f"Searching for “{selected_word}”..."):
         results, file_count, match_count = search_italic_text(selected_word, DOCX_FOLDER)
 
